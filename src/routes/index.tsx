@@ -235,47 +235,47 @@ function Index() {
   const activeList = lists.find((l) => l.id === activeListId);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-8 pb-6" style={{ background: "var(--hero-gradient)" }}>
+      <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-5 shrink-0" style={{ background: "var(--hero-gradient)" }}>
         <div className="mx-auto max-w-lg">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="min-w-0">
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">ToGo</h1>
-              <p className="text-sm text-primary-foreground/80">{user?.email}</p>
+              <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               {activeListId && activeList?.created_by === user?.id && (
                 <button
                   onClick={() => setInviteOpen(true)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 transition-colors"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
                 >
-                  <Users size={18} />
+                  <Users size={16} />
                 </button>
               )}
               <button
                 onClick={() => setDialogOpen(true)}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground text-primary shadow-md hover:scale-105 transition-transform"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground text-primary shadow-md active:scale-95 transition-transform"
               >
-                <Plus size={22} />
+                <Plus size={20} />
               </button>
               <button
                 onClick={handleLogout}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/30 transition-colors"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
               >
-                <LogOut size={18} />
+                <LogOut size={16} />
               </button>
             </div>
           </div>
 
           {/* List selector */}
-          <div className="mt-4 relative">
+          <div className="mt-3 relative">
             <button
               onClick={() => setListDropdown(!listDropdown)}
-              className="flex w-full items-center justify-between rounded-lg bg-primary-foreground/15 px-4 py-2.5 text-sm font-medium text-primary-foreground backdrop-blur-sm"
+              className="flex w-full items-center justify-between rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm"
             >
-              <span>{activeList?.name || "Selecionar lista"}</span>
-              <ChevronDown size={16} />
+              <span className="truncate">{activeList?.name || "Selecionar lista"}</span>
+              <ChevronDown size={16} className="shrink-0 ml-2" />
             </button>
             {listDropdown && (
               <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-border bg-card shadow-lg overflow-hidden">
@@ -283,7 +283,7 @@ function Index() {
                   <button
                     key={l.id}
                     onClick={() => { setActiveListId(l.id); setListDropdown(false); }}
-                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-accent transition-colors ${l.id === activeListId ? "bg-accent font-medium text-foreground" : "text-foreground"}`}
+                    className={`w-full px-4 py-2.5 text-left text-sm active:bg-accent transition-colors ${l.id === activeListId ? "bg-accent font-medium text-foreground" : "text-foreground"}`}
                   >
                     {l.name}
                   </button>
@@ -307,49 +307,19 @@ function Index() {
             )}
           </div>
 
-          <div className="mt-4 rounded-xl bg-primary-foreground/15 px-5 py-4 text-center backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/80">
+          <div className="mt-3 rounded-xl bg-primary-foreground/15 px-4 py-3 text-center backdrop-blur-sm">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
               Lugares Visitados
             </p>
-            <p className="mt-1 text-4xl font-bold text-primary-foreground">{visitedCount}</p>
+            <p className="mt-0.5 text-3xl font-bold text-primary-foreground">{visitedCount}</p>
           </div>
         </div>
       </header>
 
-      {/* Tabs */}
-      <div className="mx-auto max-w-lg">
-        <div className="flex border-b border-border">
-          <button
-            onClick={() => setTab("list")}
-            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-              tab === "list" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <List size={16} />
-            Lista
-          </button>
-          <button
-            onClick={() => setTab("location")}
-            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-              tab === "location" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <MapPin size={16} />
-            Mapa
-          </button>
-          <button
-            onClick={() => setTab("nearme")}
-            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
-              tab === "nearme" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
-            }`}
-          >
-            <Navigation size={16} />
-            Perto de mim
-          </button>
-        </div>
-
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto mx-auto max-w-lg w-full">
         {tab === "list" ? (
-          <div className="px-4 py-4 space-y-3">
+          <div className="px-4 py-3 space-y-3">
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -376,14 +346,14 @@ function Index() {
                 onChange={(e) => setCuisineFilter(e.target.value)}
                 className="flex-1 rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                <option value="all">Todas as Culinárias</option>
+                <option value="all">Todas</option>
                 {cuisines.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
 
-            <div className="space-y-3 pb-6">
+            <div className="space-y-2.5 pb-20">
               {loading ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Carregando...</p>
               ) : filtered.length === 0 ? (
@@ -402,17 +372,50 @@ function Index() {
             </div>
           </div>
         ) : tab === "location" ? (
-          <div className="px-4 py-4">
+          <div className="px-4 py-3 pb-20">
             <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">Carregando mapa...</div>}>
               <LazyMapView restaurants={restaurants} />
             </Suspense>
           </div>
         ) : (
-          <div className="px-4 py-4">
+          <div className="px-4 py-3 pb-20">
             <NearMeView restaurants={restaurants} onToggleVisited={handleToggleVisited} />
           </div>
         )}
       </div>
+
+      {/* Bottom tab bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto max-w-lg flex">
+          <button
+            onClick={() => setTab("list")}
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+              tab === "list" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <List size={20} />
+            Lista
+          </button>
+          <button
+            onClick={() => setTab("location")}
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+              tab === "location" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <MapPin size={20} />
+            Mapa
+          </button>
+          <button
+            onClick={() => setTab("nearme")}
+            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
+              tab === "nearme" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <Navigation size={20} />
+            Perto
+          </button>
+        </div>
+      </nav>
 
       <AddRestaurantDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onAdd={handleAdd} />
       {activeListId && (
