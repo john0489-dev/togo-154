@@ -2,6 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+// Safe error helper — logs details server-side, returns generic message to client
+function safeError(context: string, error: { message?: string; code?: string }): never {
+  console.error(`[server] ${context}:`, error);
+  throw new Error("Ocorreu um erro inesperado. Tente novamente.");
+}
+
 // Get all lists the user is a member of
 export const getUserLists = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -12,7 +18,7 @@ export const getUserLists = createServerFn({ method: "GET" })
       .select("*, list_members!inner(role)")
       .order("created_at", { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("getUserLists", error);
     return { lists: data ?? [] };
   });
 
@@ -28,7 +34,7 @@ export const createList = createServerFn({ method: "POST" })
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("createList", error);
     return { list };
   });
 
@@ -44,7 +50,7 @@ export const getRestaurants = createServerFn({ method: "POST" })
       .eq("list_id", data.listId)
       .order("created_at", { ascending: false });
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("getRestaurants", error);
     return { restaurants: restaurants ?? [] };
   });
 
@@ -77,7 +83,7 @@ export const addRestaurant = createServerFn({ method: "POST" })
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("addRestaurant", error);
     return { restaurant };
   });
 
@@ -101,7 +107,7 @@ export const updateRestaurant = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("updateRestaurant", error);
     return { success: true };
   });
 
@@ -116,7 +122,7 @@ export const deleteRestaurant = createServerFn({ method: "POST" })
       .delete()
       .eq("id", data.id);
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("deleteRestaurant", error);
     return { success: true };
   });
 
@@ -143,7 +149,7 @@ export const createInvite = createServerFn({ method: "POST" })
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("createInvite", error);
     return { invite };
   });
 
@@ -162,7 +168,7 @@ export const getListMembers = createServerFn({ method: "POST" })
       .select("*")
       .eq("list_id", data.listId);
 
-    if (error) throw new Error(error.message);
+    if (error) safeError("getListMembers", error);
     return { members: members ?? [] };
   });
 
@@ -194,6 +200,6 @@ export const seedDefaultRestaurants = createServerFn({ method: "POST" })
     }));
 
     const { error } = await supabase.from("restaurants").insert(rows);
-    if (error) throw new Error(error.message);
+    if (error) safeError("seedDefaultRestaurants", error);
     return { seeded: true };
   });
