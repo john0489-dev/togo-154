@@ -93,13 +93,12 @@ export const updateRestaurant = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const updates: Record<string, any> = {};
-    if (data.visited !== undefined) updates.visited = data.visited;
-    if (data.rating !== undefined) updates.rating = data.rating;
-
     const { error } = await supabase
       .from("restaurants")
-      .update(updates)
+      .update({
+        ...(data.visited !== undefined ? { visited: data.visited } : {}),
+        ...(data.rating !== undefined ? { rating: data.rating } : {}),
+      })
       .eq("id", data.id);
 
     if (error) throw new Error(error.message);
