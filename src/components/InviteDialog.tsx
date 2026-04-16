@@ -1,7 +1,16 @@
-import { useState } from "react";
-import { X, Copy, Check, Mail } from "lucide-react";
-import { createInvite } from "@/lib/api.functions";
+import { useState, useEffect } from "react";
+import { X, Copy, Check, Mail, Crown, Pencil, Eye } from "lucide-react";
+import { createInvite, getListMembers } from "@/lib/api.functions";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import type { Session } from "@supabase/supabase-js";
+
+interface Member {
+  user_id: string;
+  role: string;
+  joined_at: string;
+  email: string | null;
+}
 
 interface InviteDialogProps {
   open: boolean;
@@ -10,12 +19,29 @@ interface InviteDialogProps {
   session: Session;
 }
 
+const roleLabels: Record<string, { label: string; icon: typeof Crown }> = {
+  owner: { label: "Dono", icon: Crown },
+  editor: { label: "Editor", icon: Pencil },
+  viewer: { label: "Visualizador", icon: Eye },
+};
+
 export function InviteDialog({ open, onClose, listId, session }: InviteDialogProps) {
   const [inviteLink, setInviteLink] = useState("");
   const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoadingMembers(true);
+    getListMembers({ data: { listId } })
+      .then((res) => setMembers(res.members))
+      .catch(() => {})
+      .finally(() => setLoadingMembers(false));
+  }, [open, listId]);
 
   if (!open) return null;
 
@@ -25,7 +51,6 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     try {
       const { invite } = await createInvite({
         data: { listId, role: "editor" },
-        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
       setInviteLink(link);
@@ -43,7 +68,6 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     try {
       const { invite } = await createInvite({
         data: { listId, email: email.trim(), role: "editor" },
-        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
       setInviteLink(link);
@@ -61,16 +85,64 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const getInitial = (email: string | null) => {
+    if (!email) return "?";
+    return email.charAt(0).toUpperCase();
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="fixed inset-0 bg-foreground/40" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-card p-6 shadow-xl">
+      <div className="relative z-10 w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-card p-6 shadow-xl max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-card-foreground">Convidar Pessoas</h2>
           <button onClick={onClose} className="p-1 text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>
         </div>
+
+        {/* Members section */}
+        <div className="mb-5">
+          <p className="text-sm font-medium text-card-foreground mb-3">
+            Membros ({members.length})
+          </p>
+          {loadingMembers ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+              Carregando...
+            </div>
+          ) : members.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum membro encontrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {members.map((m) => {
+                const roleInfo = roleLabels[m.role] ?? { label: m.role, icon: Eye };
+                const RoleIcon = roleInfo.icon;
+                return (
+                  <div
+                    key={m.user_id}
+                    className="flex items-center gap-3 rounded-lg bg-muted/50 px-3 py-2"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                        {getInitial(m.email)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="flex-1 text-sm text-card-foreground truncate">
+                      {m.email ?? "Sem email"}
+                    </span>
+                    <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                      <RoleIcon size={12} />
+                      {roleInfo.label}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-border pt-4" />
 
         {error && (
           <div className="mb-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>

@@ -160,7 +160,7 @@ export const createInvite = createServerFn({ method: "POST" })
     return { invite };
   });
 
-// Get list members
+// Get list members with profile info
 export const getListMembers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ listId: z.string().uuid() }))
@@ -168,11 +168,19 @@ export const getListMembers = createServerFn({ method: "POST" })
     const { supabase } = context;
     const { data: members, error } = await supabase
       .from("list_members")
-      .select("*")
-      .eq("list_id", data.listId);
+      .select("user_id, role, joined_at, profiles(email)")
+      .eq("list_id", data.listId)
+      .order("joined_at", { ascending: true });
 
     if (error) safeError("getListMembers", error);
-    return { members: members ?? [] };
+
+    const result = (members ?? []).map((m: any) => ({
+      user_id: m.user_id,
+      role: m.role,
+      joined_at: m.joined_at,
+      email: m.profiles?.email ?? null,
+    }));
+    return { members: result };
   });
 
 // Seed default restaurants into a list
