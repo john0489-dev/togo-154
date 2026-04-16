@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
   component: IndexWrapper,
 });
 
-type Tab = "list" | "location";
+type Tab = "list" | "location" | "nearme";
 type StatusFilter = "all" | "visited" | "to-visit";
 type Restaurant = {
   id: string;
