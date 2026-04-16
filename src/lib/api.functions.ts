@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createAdminClient } from "@/lib/supabase-admin.server";
 import { z } from "zod";
 
 // Safe error helper — logs details server-side, returns generic message to client
@@ -13,9 +12,9 @@ function safeError(context: string, error: { message?: string; code?: string }):
 export const getUserLists = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { userId } = context;
-    const admin = createAdminClient();
-    const { data, error } = await admin
+    const { supabase, userId } = context;
+    // Query via list_members to avoid RLS issues with direct lists query
+    const { data, error } = await supabase
       .from("list_members")
       .select("list_id, role, lists(*)")
       .eq("user_id", userId)
@@ -35,27 +34,14 @@ export const createList = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ name: z.string().min(1).max(100) }))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const admin = createAdminClient();
-
-    // Insert the list
-    const { data: list, error } = await admin
+    const { supabase, userId } = context;
+    const { data: list, error } = await supabase
       .from("lists")
       .insert({ name: data.name, created_by: userId })
       .select()
       .single();
 
     if (error) safeError("createList", error);
-
-    // Add creator as owner member
-    const { error: memberError } = await admin
-      .from("list_members")
-      .insert({ list_id: list.id, user_id: userId, role: "owner" });
-
-    if (memberError) {
-      console.error("[server] createList:addMember", memberError);
-    }
-
     return { list };
   });
 
@@ -64,22 +50,8 @@ export const getRestaurants = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ listId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const admin = createAdminClient();
-
-    // Verify membership
-    const { data: member } = await admin
-      .from("list_members")
-      .select("role")
-      .eq("list_id", data.listId)
-      .eq("user_id", userId)
-      .single();
-
-    if (!member) {
-      throw new Error("Acesso negado.");
-    }
-
-    const { data: restaurants, error } = await admin
+    const { supabase } = context;
+    const { data: restaurants, error } = await supabase
       .from("restaurants")
       .select("*")
       .eq("list_id", data.listId)
@@ -103,10 +75,8 @@ export const addRestaurant = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const admin = createAdminClient();
-
-    const { data: restaurant, error } = await admin
+    const { supabase, userId } = context;
+    const { data: restaurant, error } = await supabase
       .from("restaurants")
       .insert({
         list_id: data.listId,
@@ -135,8 +105,8 @@ export const updateRestaurant = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data, context }) => {
-    const admin = createAdminClient();
-    const { error } = await admin
+    const { supabase } = context;
+    const { error } = await supabase
       .from("restaurants")
       .update({
         ...(data.visited !== undefined ? { visited: data.visited } : {}),
@@ -153,8 +123,8 @@ export const deleteRestaurant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    const admin = createAdminClient();
-    const { error } = await admin
+    const { supabase } = context;
+    const { error } = await supabase
       .from("restaurants")
       .delete()
       .eq("id", data.id);
@@ -174,9 +144,8 @@ export const createInvite = createServerFn({ method: "POST" })
     })
   )
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const admin = createAdminClient();
-    const { data: invite, error } = await admin
+    const { supabase, userId } = context;
+    const { data: invite, error } = await supabase
       .from("list_invites")
       .insert({
         list_id: data.listId,
@@ -196,8 +165,8 @@ export const getListMembers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ listId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    const admin = createAdminClient();
-    const { data: members, error } = await admin
+    const { supabase } = context;
+    const { data: members, error } = await supabase
       .from("list_members")
       .select("*")
       .eq("list_id", data.listId);
@@ -211,11 +180,10 @@ export const seedDefaultRestaurants = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ listId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    const { userId } = context;
-    const admin = createAdminClient();
+    const { supabase, userId } = context;
 
     // Check if list already has restaurants
-    const { count } = await admin
+    const { count } = await supabase
       .from("restaurants")
       .select("*", { count: "exact", head: true })
       .eq("list_id", data.listId);
@@ -234,7 +202,7 @@ export const seedDefaultRestaurants = createServerFn({ method: "POST" })
       added_by: userId,
     }));
 
-    const { error } = await admin.from("restaurants").insert(rows);
+    const { error } = await supabase.from("restaurants").insert(rows);
     if (error) safeError("seedDefaultRestaurants", error);
     return { seeded: true };
   });
