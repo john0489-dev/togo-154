@@ -147,48 +147,9 @@ export const createInvite = createServerFn({ method: "POST" })
     return { invite };
   });
 
-// Accept invite
-export const acceptInvite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator(z.object({ inviteCode: z.string().min(1).max(64) }))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+// Accept invite moved to invite.functions.ts (uses admin client)
 
-    // Use admin-like approach: first get the invite
-    const { data: invite, error: fetchErr } = await supabase
-      .from("list_invites")
-      .select("*")
-      .eq("invite_code", data.inviteCode)
-      .eq("accepted", false)
-      .single();
 
-    if (fetchErr || !invite) throw new Error("Convite não encontrado ou já usado.");
-
-    // Add user as member
-    const { error: memberErr } = await supabase
-      .from("list_members")
-      .insert({
-        list_id: invite.list_id,
-        user_id: userId,
-        role: invite.role,
-      });
-
-    if (memberErr) {
-      if (memberErr.code === "23505") {
-        // Already a member
-        return { listId: invite.list_id, alreadyMember: true };
-      }
-      throw new Error(memberErr.message);
-    }
-
-    // Mark as accepted
-    await supabase
-      .from("list_invites")
-      .update({ accepted: true })
-      .eq("id", invite.id);
-
-    return { listId: invite.list_id, alreadyMember: false };
-  });
 
 // Get list members
 export const getListMembers = createServerFn({ method: "POST" })

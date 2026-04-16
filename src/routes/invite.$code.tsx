@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { acceptInvite } from "@/lib/api.functions";
+import { acceptInvite } from "@/lib/invite.functions";
 
 export const Route = createFileRoute("/invite/$code")({
   head: () => ({
