@@ -44,17 +44,17 @@ type ListItem = {
   created_by: string;
 };
 
-function Index() {
-  const { user, session, isAuthenticated, loading: authLoading } = useAuth();
+function IndexWrapper() {
+  const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (!loading && !isAuthenticated) {
       navigate({ to: "/login" });
     }
-  }, [authLoading, isAuthenticated, navigate]);
+  }, [loading, isAuthenticated, navigate]);
 
-  if (authLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">Carregando...</p>
@@ -63,6 +63,13 @@ function Index() {
   }
 
   if (!isAuthenticated) return null;
+
+  return <Index />;
+}
+
+function Index() {
+  const { user, session } = useAuth();
+  const navigate = useNavigate();
   const [lists, setLists] = useState<ListItem[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
