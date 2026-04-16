@@ -85,6 +85,13 @@ export type Database = {
             referencedRelation: "lists"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "list_members_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       lists: {
