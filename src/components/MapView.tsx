@@ -45,14 +45,41 @@ interface MapViewProps {
   restaurants: Restaurant[];
 }
 
-function FitBounds({ markers }: { markers: { lat: number; lng: number }[] }) {
+function FitToUser({ markers }: { markers: { lat: number; lng: number }[] }) {
   const map = useMap();
+  const [located, setLocated] = useState(false);
 
   useEffect(() => {
-    if (markers.length === 0) return;
-    const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
-  }, [markers, map]);
+    let cancelled = false;
+
+    if (!navigator.geolocation) {
+      // No geolocation — fall back to markers
+      if (markers.length > 0) {
+        const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+      }
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (cancelled) return;
+        map.setView([pos.coords.latitude, pos.coords.longitude], 14);
+        setLocated(true);
+      },
+      () => {
+        if (cancelled) return;
+        // Permission denied or error — fit to markers
+        if (markers.length > 0) {
+          const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        }
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+
+    return () => { cancelled = true; };
+  }, [map, markers]);
 
   return null;
 }
