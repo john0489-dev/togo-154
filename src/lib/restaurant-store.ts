@@ -8,6 +8,8 @@ export type Restaurant = {
 };
 
 const STORAGE_KEY = "togo-restaurants";
+const STORAGE_VERSION_KEY = "togo-restaurants-version";
+const CURRENT_VERSION = "2";
 
 let _id = 0;
 const r = (name: string, location: string, cuisine: string, visited = false, rating = 0): Restaurant => ({
