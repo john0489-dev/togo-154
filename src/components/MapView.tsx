@@ -1,0 +1,145 @@
+import { useEffect, useRef, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { getCoords, jitter } from "@/lib/neighborhood-coords";
+
+// Fix default marker icons not loading in bundlers
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+function createIcon(color: string) {
+  return L.divIcon({
+    className: "custom-marker",
+    html: `<div style="
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: ${color};
+      border: 2.5px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    "></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -10],
+  });
+}
+
+const visitedIcon = createIcon("#22c55e");
+const toVisitIcon = createIcon("#eab308");
+
+type Restaurant = {
+  id: string;
+  name: string;
+  location: string;
+  cuisine: string;
+  visited: boolean;
+  rating: number;
+};
+
+interface MapViewProps {
+  restaurants: Restaurant[];
+}
+
+function FitBounds({ markers }: { markers: { lat: number; lng: number }[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (markers.length === 0) return;
+    const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+  }, [markers, map]);
+
+  return null;
+}
+
+export function MapView({ restaurants }: MapViewProps) {
+  const markersData = useMemo(() => {
+    const result: {
+      id: string;
+      name: string;
+      location: string;
+      cuisine: string;
+      visited: boolean;
+      rating: number;
+      lat: number;
+      lng: number;
+    }[] = [];
+
+    restaurants.forEach((r, i) => {
+      const coords = getCoords(r.location);
+      if (!coords) return;
+      const jittered = jitter(coords, i);
+      result.push({ ...r, lat: jittered.lat, lng: jittered.lng });
+    });
+
+    return result;
+  }, [restaurants]);
+
+  if (markersData.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
+        Nenhum restaurante com localização para mostrar no mapa.
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full" style={{ height: "calc(100vh - 280px)", minHeight: "400px" }}>
+      <MapContainer
+        center={[-23.5505, -46.6333]}
+        zoom={13}
+        className="h-full w-full rounded-lg"
+        style={{ zIndex: 0 }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <FitBounds markers={markersData} />
+        {markersData.map((m) => (
+          <Marker key={m.id} position={[m.lat, m.lng]} icon={m.visited ? visitedIcon : toVisitIcon}>
+            <Popup>
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">{m.name}</p>
+                <p className="text-xs text-muted-foreground">{m.cuisine} • {m.location}</p>
+                {m.visited && m.rating > 0 && (
+                  <p className="mt-1 text-xs font-medium" style={{ color: "#22c55e" }}>
+                    ⭐ {m.rating}/10
+                  </p>
+                )}
+                <span
+                  className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    background: m.visited ? "#dcfce7" : "#fef9c3",
+                    color: m.visited ? "#166534" : "#854d0e",
+                  }}
+                >
+                  {m.visited ? "Visitado" : "Para visitar"}
+                </span>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+
+      {/* Legend */}
+      <div className="absolute bottom-4 left-4 z-[1000] rounded-lg border border-border bg-card/95 px-3 py-2 shadow-md backdrop-blur-sm">
+        <div className="flex items-center gap-4 text-xs">
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-3 w-3 rounded-full" style={{ background: "#22c55e", border: "2px solid white", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+            Visitado
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block h-3 w-3 rounded-full" style={{ background: "#eab308", border: "2px solid white", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+            Para visitar
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

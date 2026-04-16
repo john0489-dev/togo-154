@@ -1,11 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { Plus, Search, List, MapPin, Navigation, LogOut, Users, Share2, ChevronDown } from "lucide-react";
+import { Plus, Search, List, MapPin, LogOut, Users, ChevronDown } from "lucide-react";
+import { lazy, Suspense } from "react";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+
+const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 import {
   getUserLists,
   getRestaurants,
@@ -389,8 +392,10 @@ function Index() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
-            Mapa em breve...
+          <div className="px-4 py-4">
+            <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">Carregando mapa...</div>}>
+              <LazyMapView restaurants={restaurants} />
+            </Suspense>
           </div>
         )}
       </div>
