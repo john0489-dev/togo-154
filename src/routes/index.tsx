@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { Plus, Search, List, MapPin, LogOut, Users, ChevronDown } from "lucide-react";
+import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown } from "lucide-react";
 import { lazy, Suspense } from "react";
+import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/")({
   component: IndexWrapper,
 });
 
-type Tab = "list" | "location";
+type Tab = "list" | "location" | "nearme";
 type StatusFilter = "all" | "visited" | "to-visit";
 type Restaurant = {
   id: string;
@@ -334,7 +335,16 @@ function Index() {
             }`}
           >
             <MapPin size={16} />
-            Localização
+            Mapa
+          </button>
+          <button
+            onClick={() => setTab("nearme")}
+            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+              tab === "nearme" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <Navigation size={16} />
+            Perto de mim
           </button>
         </div>
 
@@ -391,11 +401,15 @@ function Index() {
               )}
             </div>
           </div>
-        ) : (
+        ) : tab === "location" ? (
           <div className="px-4 py-4">
             <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">Carregando mapa...</div>}>
               <LazyMapView restaurants={restaurants} />
             </Suspense>
+          </div>
+        ) : (
+          <div className="px-4 py-4">
+            <NearMeView restaurants={restaurants} onToggleVisited={handleToggleVisited} />
           </div>
         )}
       </div>
