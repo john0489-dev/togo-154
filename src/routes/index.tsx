@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Gerencie sua lista pessoal de restaurantes e bares para visitar." },
     ],
   }),
-  component: Index,
+  component: IndexWrapper,
 });
 
 type Tab = "list" | "location";
