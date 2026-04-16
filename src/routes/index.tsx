@@ -16,7 +16,7 @@ import {
   seedDefaultRestaurants,
 } from "@/lib/api.functions";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "ToGo — Sua lista pessoal de restaurantes" },
