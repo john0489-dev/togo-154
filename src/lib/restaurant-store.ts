@@ -250,6 +250,12 @@ const defaultRestaurants: Restaurant[] = [
 export function loadRestaurants(): Restaurant[] {
   if (typeof window === "undefined") return defaultRestaurants;
   try {
+    const version = localStorage.getItem(STORAGE_VERSION_KEY);
+    if (version !== CURRENT_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
+      return defaultRestaurants;
+    }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) return JSON.parse(stored);
   } catch {}
