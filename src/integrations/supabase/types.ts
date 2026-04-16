@@ -14,16 +14,166 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      list_invites: {
+        Row: {
+          accepted: boolean
+          created_at: string
+          created_by: string
+          email: string | null
+          id: string
+          invite_code: string
+          list_id: string
+          role: Database["public"]["Enums"]["list_role"]
+        }
+        Insert: {
+          accepted?: boolean
+          created_at?: string
+          created_by: string
+          email?: string | null
+          id?: string
+          invite_code?: string
+          list_id: string
+          role?: Database["public"]["Enums"]["list_role"]
+        }
+        Update: {
+          accepted?: boolean
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          id?: string
+          invite_code?: string
+          list_id?: string
+          role?: Database["public"]["Enums"]["list_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_invites_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      list_members: {
+        Row: {
+          id: string
+          joined_at: string
+          list_id: string
+          role: Database["public"]["Enums"]["list_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          list_id: string
+          role?: Database["public"]["Enums"]["list_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          list_id?: string
+          role?: Database["public"]["Enums"]["list_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_members_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lists: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      restaurants: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          cuisine: string
+          id: string
+          list_id: string
+          location: string
+          name: string
+          rating: number
+          updated_at: string
+          visited: boolean
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          cuisine?: string
+          id?: string
+          list_id: string
+          location?: string
+          name: string
+          rating?: number
+          updated_at?: string
+          visited?: boolean
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          cuisine?: string
+          id?: string
+          list_id?: string
+          location?: string
+          name?: string
+          rating?: number
+          updated_at?: string
+          visited?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurants_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_list_role: {
+        Args: { _list_id: string; _user_id: string }
+        Returns: Database["public"]["Enums"]["list_role"]
+      }
+      is_list_member: {
+        Args: { _list_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      list_role: "owner" | "editor" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +300,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      list_role: ["owner", "editor", "viewer"],
+    },
   },
 } as const
