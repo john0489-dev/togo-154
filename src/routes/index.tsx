@@ -7,6 +7,8 @@ import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+
+const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 import {
   getUserLists,
   getRestaurants,
