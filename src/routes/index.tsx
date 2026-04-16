@@ -16,14 +16,14 @@ import {
   seedDefaultRestaurants,
 } from "@/lib/api.functions";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "ToGo — Sua lista pessoal de restaurantes" },
       { name: "description", content: "Gerencie sua lista pessoal de restaurantes e bares para visitar." },
     ],
   }),
-  component: Index,
+  component: IndexWrapper,
 });
 
 type Tab = "list" | "location";
@@ -43,6 +43,29 @@ type ListItem = {
   name: string;
   created_by: string;
 };
+
+function IndexWrapper() {
+  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [loading, isAuthenticated, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
+
+  return <Index />;
+}
 
 function Index() {
   const { user, session } = useAuth();
