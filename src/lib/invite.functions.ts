@@ -22,6 +22,18 @@ export const acceptInvite = createServerFn({ method: "POST" })
 
     if (fetchErr || !invite) throw new Error("Convite não encontrado ou já usado.");
 
+    // If the invite is email-targeted, verify the accepting user's email matches
+    if (invite.email) {
+      const { data: { user }, error: userErr } = await supabaseAdmin.auth.admin.getUserById(userId);
+      if (userErr || !user) {
+        console.error("[server] Failed to fetch user for email check:", userErr);
+        throw new Error("Ocorreu um erro inesperado. Tente novamente.");
+      }
+      if (user.email?.toLowerCase() !== invite.email.toLowerCase()) {
+        throw new Error("Este convite foi criado para outro email.");
+      }
+    }
+
     // Add user as member
     const { error: memberErr } = await supabaseAdmin
       .from("list_members")
@@ -35,7 +47,8 @@ export const acceptInvite = createServerFn({ method: "POST" })
       if (memberErr.code === "23505") {
         return { listId: invite.list_id, alreadyMember: true };
       }
-      throw new Error(memberErr.message);
+      console.error("[server] Failed to add member:", memberErr);
+      throw new Error("Ocorreu um erro inesperado. Tente novamente.");
     }
 
     // Mark as accepted
