@@ -390,8 +390,10 @@ function Index() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
-            Mapa em breve...
+          <div className="px-4 py-4">
+            <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">Carregando mapa...</div>}>
+              <LazyMapView restaurants={restaurants} />
+            </Suspense>
           </div>
         )}
       </div>
