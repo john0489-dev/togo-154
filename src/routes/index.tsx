@@ -45,8 +45,24 @@ type ListItem = {
 };
 
 function Index() {
-  const { user, session } = useAuth();
+  const { user, session, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
   const [lists, setLists] = useState<ListItem[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
