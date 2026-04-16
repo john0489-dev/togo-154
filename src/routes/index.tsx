@@ -335,7 +335,16 @@ function Index() {
             }`}
           >
             <MapPin size={16} />
-            Localização
+            Mapa
+          </button>
+          <button
+            onClick={() => setTab("nearme")}
+            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+              tab === "nearme" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <Navigation size={16} />
+            Perto de mim
           </button>
         </div>
 
