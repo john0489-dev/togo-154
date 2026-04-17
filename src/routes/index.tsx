@@ -23,6 +23,9 @@ import {
 } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    list: typeof search.list === "string" ? search.list : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "ToGo — Sua lista pessoal de restaurantes" },
@@ -79,8 +82,9 @@ function IndexWrapper() {
 function Index() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
+  const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
-  const [activeListId, setActiveListId] = useState<string | null>(null);
+  const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [tab, setTab] = useState<Tab>("list");
   const [search, setSearch] = useState("");
