@@ -111,14 +111,16 @@ function Index() {
       const { lists: data } = await getUserLists({
         headers: { Authorization: `Bearer ${session!.access_token}` },
       });
+      console.log("[loadLists] raw:", data);
       const mapped = data
         .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
         .filter((l) => !!l.id);
+      console.log("[loadLists] mapped:", mapped);
       setLists(mapped);
-      if (mapped.length > 0 && !activeListId) {
-        setActiveListId(mapped[0].id);
-      } else if (mapped.length === 0) {
-        // Create default list
+      if (mapped.length > 0) {
+        setActiveListId((prev) => prev ?? mapped[0].id);
+      } else {
+        // No memberships — create default list
         const { list } = await createList({
           data: { name: "Minha Lista" },
           headers: { Authorization: `Bearer ${session!.access_token}` },
