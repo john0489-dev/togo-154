@@ -1,11 +1,11 @@
 {
-  "name": "ToGo",
-  "short_name": "ToGo",
+  "name": "To Go",
+  "short_name": "To Go",
   "description": "Sua lista pessoal de restaurantes",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4B3FCF",
+  "background_color": "#1a1a1a",
+  "theme_color": "#86d9b0",
   "orientation": "portrait",
   "icons": [
     {
