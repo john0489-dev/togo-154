@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { acceptInvite } from "@/lib/invite.functions";
-import togoLogo from "@/assets/togo-logo.jpeg";
 
 export const Route = createFileRoute("/invite/$code")({
   head: () => ({
@@ -56,8 +55,7 @@ function InvitePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="max-w-sm text-center">
-          <img src={togoLogo} alt="To Go logo" className="mx-auto mb-3 h-20 w-20 rounded-2xl object-cover shadow-md" />
-          <h1 className="text-2xl font-bold text-foreground">To Go</h1>
+        <h1 className="text-2xl font-bold text-foreground">To Go</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             Você precisa estar logado para aceitar este convite.
           </p>
@@ -75,7 +73,6 @@ function InvitePage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-sm text-center">
-        <img src={togoLogo} alt="To Go logo" className="mx-auto mb-3 h-20 w-20 rounded-2xl object-cover shadow-md" />
         <h1 className="text-2xl font-bold text-foreground">To Go</h1>
         <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${status === "success" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
           {message}
