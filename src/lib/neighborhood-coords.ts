@@ -49,7 +49,15 @@ const neighborhoods: Record<string, Coords> = {
  */
 export function getCoords(location: string): Coords | null {
   if (!location) return null;
-  const lower = location.toLowerCase();
+  const lower = location.toLowerCase().trim();
+  const genericCityLabels = new Set([
+    "são paulo",
+    "sp",
+    "são paulo, brasil",
+    "sao paulo",
+    "sao paulo, brasil",
+    "brasil",
+  ]);
 
   // Try exact match first
   if (neighborhoods[lower]) return neighborhoods[lower];
@@ -61,7 +69,12 @@ export function getCoords(location: string): Coords | null {
     }
   }
 
-  // Fallback: if it mentions São Paulo, use city center with jitter
+  // Avoid placing generic São Paulo entries in the city center — wait for real geocoding instead
+  if (genericCityLabels.has(lower)) {
+    return null;
+  }
+
+  // Fallback only when the string is still more specific than the generic city label
   if (lower.includes("são paulo") || lower.includes("sp")) {
     return neighborhoods["são paulo"];
   }
