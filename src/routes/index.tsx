@@ -310,6 +310,30 @@ function Index() {
     }
   };
 
+  const handleDeleteList = async (listId: string, listName: string) => {
+    if (!session) return;
+    if (!window.confirm(`Excluir a lista "${listName}"? Todos os restaurantes dela serão removidos. Esta ação não pode ser desfeita.`)) return;
+    const prevLists = lists;
+    const remaining = lists.filter((l) => l.id !== listId);
+    setLists(remaining);
+    if (activeListId === listId) {
+      const next = remaining[0]?.id ?? null;
+      setActiveListId(next);
+      autoGeocodeStartedRef.current = null;
+      if (!next) setRestaurants([]);
+    }
+    try {
+      await deleteList({
+        data: { listId },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+    } catch (err) {
+      console.error("Error deleting list:", err);
+      setLists(prevLists);
+      window.alert("Não foi possível excluir a lista. Tente novamente.");
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/login" });
