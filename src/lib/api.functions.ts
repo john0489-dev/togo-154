@@ -183,6 +183,40 @@ export const getListMembers = createServerFn({ method: "POST" })
     return { members: result };
   });
 
+// Search restaurant address via OpenStreetMap Nominatim
+export const searchRestaurantAddress = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ query: z.string().min(1).max(200) }))
+  .handler(async ({ data }) => {
+    try {
+      const q = encodeURIComponent(`${data.query}, São Paulo, Brasil`);
+      const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&addressdetails=1&limit=5`;
+      const res = await fetch(url, {
+        headers: {
+          "User-Agent": "ToGo-RestaurantList/1.0 (lovable.app)",
+          "Accept-Language": "pt-BR,pt",
+        },
+      });
+      if (!res.ok) {
+        console.error("[searchRestaurantAddress] HTTP", res.status);
+        return { suggestions: [] };
+      }
+      const json = (await res.json()) as Array<{
+        display_name: string;
+        lat: string;
+        lon: string;
+      }>;
+      const suggestions = (json ?? []).map((r) => ({
+        display_name: r.display_name,
+        lat: parseFloat(r.lat),
+        lng: parseFloat(r.lon),
+      }));
+      return { suggestions };
+    } catch (err) {
+      console.error("[searchRestaurantAddress] error:", err);
+      return { suggestions: [] };
+    }
+  });
+
 // Seed default restaurants into a list
 export const seedDefaultRestaurants = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
