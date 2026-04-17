@@ -187,27 +187,30 @@ export const searchRestaurantAddress = createServerFn({ method: "POST" })
     }
   });
 
-// Geocode all restaurants in a list that don't yet have coordinates
+// Geocode a batch of restaurants in a list that don't yet have coordinates.
+// Processes up to BATCH_SIZE per call to stay within Worker timeout limits.
+// Client should call repeatedly until `remaining` is 0.
 export const geocodeListRestaurants = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ listId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
+    const BATCH_SIZE = 8; // ~9s per batch (1.1s × 8) — well under Worker limits
     const { supabase } = context;
     const { data: rows, error } = await supabase
       .from("restaurants")
       .select("id, name, location, latitude, longitude")
-      .eq("list_id", data.listId);
+      .eq("list_id", data.listId)
+      .or("latitude.is.null,longitude.is.null")
+      .limit(BATCH_SIZE);
 
     if (error) safeError("geocodeListRestaurants:fetch", error);
 
-    const pending = (rows ?? []).filter(
-      (r: any) => r.latitude == null || r.longitude == null
-    );
-
+    const pending = rows ?? [];
     let updated = 0;
     let failed = 0;
 
-    for (const r of pending) {
+    for (let i = 0; i < pending.length; i++) {
+      const r: any = pending[i];
       const bias = r.location?.trim() || "São Paulo, Brasil";
       const query = `${r.name}, ${bias}`;
       try {
@@ -229,17 +232,33 @@ export const geocodeListRestaurants = createServerFn({ method: "POST" })
             updated++;
           }
         } else {
+          // Mark as failed by setting coordinates to 0,0 sentinel? No — leave null,
+          // but to avoid infinite loops we set address to a marker.
+          await supabase
+            .from("restaurants")
+            .update({ address: "__not_found__" })
+            .eq("id", r.id);
           failed++;
         }
       } catch (err) {
         console.error("[geocodeListRestaurants:fetch]", err);
         failed++;
       }
-      // Be polite with Nominatim's free tier (max 1 req/sec)
-      await new Promise((resolve) => setTimeout(resolve, 1100));
+      // Be polite with Nominatim (max 1 req/sec). Skip delay after last item.
+      if (i < pending.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+      }
     }
 
-    return { total: pending.length, updated, failed };
+    // Count remaining still-missing rows (excluding ones marked __not_found__)
+    const { count: remaining } = await supabase
+      .from("restaurants")
+      .select("*", { count: "exact", head: true })
+      .eq("list_id", data.listId)
+      .or("latitude.is.null,longitude.is.null")
+      .neq("address", "__not_found__");
+
+    return { processed: pending.length, updated, failed, remaining: remaining ?? 0 };
   });
 
 // Delete a restaurant
