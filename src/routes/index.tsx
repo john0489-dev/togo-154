@@ -92,7 +92,9 @@ function Index() {
   const [newListName, setNewListName] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const totalCount = restaurants.length;
   const visitedCount = useMemo(() => restaurants.filter((r) => r.visited).length, [restaurants]);
+  const toVisitCount = totalCount - visitedCount;
   const cuisines = useMemo(() => {
     const set = new Set(restaurants.map((r) => r.cuisine));
     return Array.from(set).sort();
@@ -427,11 +429,25 @@ function Index() {
             )}
           </div>
 
-          <div className="mt-3 rounded-xl bg-primary-foreground/15 px-4 py-3 text-center backdrop-blur-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
-              Lugares Visitados
-            </p>
-            <p className="mt-0.5 text-3xl font-bold text-primary-foreground">{visitedCount}</p>
+          <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-primary-foreground/15 px-3 py-3 backdrop-blur-sm">
+            <div className="text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
+                Total
+              </p>
+              <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{totalCount}</p>
+            </div>
+            <div className="text-center border-x border-primary-foreground/20">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
+                Visitados
+              </p>
+              <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{visitedCount}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
+                Para visitar
+              </p>
+              <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{toVisitCount}</p>
+            </div>
           </div>
         </div>
       </header>
