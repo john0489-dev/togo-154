@@ -111,7 +111,9 @@ function Index() {
       const { lists: data } = await getUserLists({
         headers: { Authorization: `Bearer ${session!.access_token}` },
       });
-      const mapped = data.map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }));
+      const mapped = data
+        .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
+        .filter((l) => !!l.id);
       setLists(mapped);
       if (mapped.length > 0 && !activeListId) {
         setActiveListId(mapped[0].id);
