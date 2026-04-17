@@ -15,7 +15,7 @@ const CUISINE_OPTIONS = [
 export function AddRestaurantDialog({ open, onClose, onAdd }: AddRestaurantDialogProps) {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
-  const [cuisine, setCuisine] = useState("Restaurante");
+  const [cuisine, setCuisine] = useState("Bar");
 
   if (!open) return null;
 
