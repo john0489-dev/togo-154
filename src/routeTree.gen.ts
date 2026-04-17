@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
+import { Route as ApiGeocodeBatchRouteImport } from './routes/api.geocode-batch'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -28,34 +29,43 @@ const InviteCodeRoute = InviteCodeRouteImport.update({
   path: '/invite/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGeocodeBatchRoute = ApiGeocodeBatchRouteImport.update({
+  id: '/api/geocode-batch',
+  path: '/api/geocode-batch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/api/geocode-batch': typeof ApiGeocodeBatchRoute
   '/invite/$code': typeof InviteCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/api/geocode-batch': typeof ApiGeocodeBatchRoute
   '/invite/$code': typeof InviteCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/api/geocode-batch': typeof ApiGeocodeBatchRoute
   '/invite/$code': typeof InviteCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/invite/$code'
+  fullPaths: '/' | '/login' | '/api/geocode-batch' | '/invite/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/invite/$code'
-  id: '__root__' | '/' | '/login' | '/invite/$code'
+  to: '/' | '/login' | '/api/geocode-batch' | '/invite/$code'
+  id: '__root__' | '/' | '/login' | '/api/geocode-batch' | '/invite/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  ApiGeocodeBatchRoute: typeof ApiGeocodeBatchRoute
   InviteCodeRoute: typeof InviteCodeRoute
 }
 
@@ -82,14 +92,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/geocode-batch': {
+      id: '/api/geocode-batch'
+      path: '/api/geocode-batch'
+      fullPath: '/api/geocode-batch'
+      preLoaderRoute: typeof ApiGeocodeBatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  ApiGeocodeBatchRoute: ApiGeocodeBatchRoute,
   InviteCodeRoute: InviteCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
