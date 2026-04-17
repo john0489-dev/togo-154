@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import togoLogo from "@/assets/togo-logo.jpeg";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -59,6 +60,11 @@ function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
+          <img
+            src={togoLogo}
+            alt="To Go logo"
+            className="mx-auto mb-3 h-20 w-20 rounded-2xl object-cover shadow-md"
+          />
           <h1 className="text-3xl font-bold text-foreground tracking-tight">To Go</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {isSignUp ? "Crie sua conta" : "Entre na sua conta"}
