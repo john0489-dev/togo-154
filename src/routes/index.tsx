@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2 } from "lucide-react";
+import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2 } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
@@ -17,6 +17,7 @@ import {
   updateRestaurant,
   deleteRestaurant,
   createList,
+  deleteList,
   seedDefaultRestaurants,
   geocodeListRestaurants,
 } from "@/lib/api.functions";
@@ -309,6 +310,30 @@ function Index() {
     }
   };
 
+  const handleDeleteList = async (listId: string, listName: string) => {
+    if (!session) return;
+    if (!window.confirm(`Excluir a lista "${listName}"? Todos os restaurantes dela serão removidos. Esta ação não pode ser desfeita.`)) return;
+    const prevLists = lists;
+    const remaining = lists.filter((l) => l.id !== listId);
+    setLists(remaining);
+    if (activeListId === listId) {
+      const next = remaining[0]?.id ?? null;
+      setActiveListId(next);
+      autoGeocodeStartedRef.current = null;
+      if (!next) setRestaurants([]);
+    }
+    try {
+      await deleteList({
+        data: { listId },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+    } catch (err) {
+      console.error("Error deleting list:", err);
+      setLists(prevLists);
+      window.alert("Não foi possível excluir a lista. Tente novamente.");
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/login" });
@@ -362,13 +387,26 @@ function Index() {
             {listDropdown && (
               <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-border bg-card shadow-lg overflow-hidden">
                 {lists.map((l) => (
-                  <button
+                  <div
                     key={l.id}
-                    onClick={() => { setActiveListId(l.id); setListDropdown(false); }}
-                    className={`w-full px-4 py-2.5 text-left text-sm active:bg-accent transition-colors ${l.id === activeListId ? "bg-accent font-medium text-foreground" : "text-foreground"}`}
+                    className={`flex items-center ${l.id === activeListId ? "bg-accent" : ""}`}
                   >
-                    {l.name}
-                  </button>
+                    <button
+                      onClick={() => { setActiveListId(l.id); setListDropdown(false); }}
+                      className={`flex-1 px-4 py-2.5 text-left text-sm active:bg-accent transition-colors ${l.id === activeListId ? "font-medium text-foreground" : "text-foreground"}`}
+                    >
+                      {l.name}
+                    </button>
+                    {l.created_by === user?.id && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteList(l.id, l.name); }}
+                        className="flex h-9 w-9 items-center justify-center text-muted-foreground active:text-destructive active:bg-destructive/10 transition-colors mr-1 rounded"
+                        aria-label={`Excluir lista ${l.name}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 <div className="border-t border-border p-2 flex gap-2">
                   <input
