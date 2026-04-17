@@ -54,7 +54,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     setError("");
     try {
       const { invite } = await createInvite({
-        data: { listId, role: "editor" },
+        data: { listId, role: selectedRole },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
@@ -72,7 +72,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     setError("");
     try {
       const { invite } = await createInvite({
-        data: { listId, email: email.trim(), role: "editor" },
+        data: { listId, email: email.trim(), role: selectedRole },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
