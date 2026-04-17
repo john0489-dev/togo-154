@@ -250,7 +250,6 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
             </div>
           </div>
         </div>
-        </div>
       </div>
     </div>
   );
