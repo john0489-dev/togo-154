@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -87,35 +87,75 @@ function FitToUser({ markers }: { markers: { lat: number; lng: number }[] }) {
   return null;
 }
 
-export function MapView({ restaurants }: MapViewProps) {
-  const markersData = useMemo(() => {
-    const result: {
-      id: string;
-      name: string;
-      location: string;
-      cuisine: string;
-      visited: boolean;
-      rating: number;
-      address?: string | null;
-      lat: number;
-      lng: number;
-    }[] = [];
+type MarkerData = {
+  id: string;
+  name: string;
+  location: string;
+  cuisine: string;
+  visited: boolean;
+  rating: number;
+  address?: string | null;
+  lat: number;
+  lng: number;
+};
 
+// Memoized markers layer — only re-renders when marker positions/visited change
+const MarkersLayer = memo(function MarkersLayer({ markers }: { markers: MarkerData[] }) {
+  return (
+    <>
+      {markers.map((m) => (
+        <Marker key={m.id} position={[m.lat, m.lng]} icon={m.visited ? visitedIcon : toVisitIcon}>
+          <Popup>
+            <div className="text-sm">
+              <p className="font-semibold text-foreground">{m.name}</p>
+              <p className="text-xs text-muted-foreground">{m.cuisine} • {m.location}</p>
+              {m.address && (
+                <p className="mt-1 text-[11px] text-muted-foreground italic">{m.address}</p>
+              )}
+              {m.visited && m.rating > 0 && (
+                <p className="mt-1 text-xs font-medium" style={{ color: "#22c55e" }}>
+                  ⭐ {m.rating}/10
+                </p>
+              )}
+              <span
+                className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  background: m.visited ? "#dcfce7" : "#fef9c3",
+                  color: m.visited ? "#166534" : "#854d0e",
+                }}
+              >
+                {m.visited ? "Visitado" : "Para visitar"}
+              </span>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  );
+});
+
+function MapViewImpl({ restaurants }: MapViewProps) {
+  const markersData = useMemo<MarkerData[]>(() => {
+    const result: MarkerData[] = [];
     restaurants.forEach((r, i) => {
-      // Prefer real geocoded coords from the database
       if (r.latitude != null && r.longitude != null) {
         result.push({ ...r, lat: r.latitude, lng: r.longitude });
         return;
       }
-      // Fallback: approximate neighborhood coords (with jitter)
       const coords = getCoords(r.location);
       if (!coords) return;
       const jittered = jitter(coords, i);
       result.push({ ...r, lat: jittered.lat, lng: jittered.lng });
     });
-
     return result;
   }, [restaurants]);
+
+  // Stable signature for FitToUser so it doesn't re-fit on every visited toggle
+  const fitMarkers = useMemo(
+    () => markersData.map((m) => ({ lat: m.lat, lng: m.lng })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [markersData.length]
+  );
 
   if (markersData.length === 0) {
     return (
@@ -132,39 +172,14 @@ export function MapView({ restaurants }: MapViewProps) {
         zoom={13}
         className="h-full w-full rounded-lg"
         style={{ zIndex: 0 }}
+        preferCanvas={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <FitToUser markers={markersData} />
-        {markersData.map((m) => (
-          <Marker key={m.id} position={[m.lat, m.lng]} icon={m.visited ? visitedIcon : toVisitIcon}>
-            <Popup>
-              <div className="text-sm">
-                <p className="font-semibold text-foreground">{m.name}</p>
-                <p className="text-xs text-muted-foreground">{m.cuisine} • {m.location}</p>
-                {m.address && (
-                  <p className="mt-1 text-[11px] text-muted-foreground italic">{m.address}</p>
-                )}
-                {m.visited && m.rating > 0 && (
-                  <p className="mt-1 text-xs font-medium" style={{ color: "#22c55e" }}>
-                    ⭐ {m.rating}/10
-                  </p>
-                )}
-                <span
-                  className="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-                  style={{
-                    background: m.visited ? "#dcfce7" : "#fef9c3",
-                    color: m.visited ? "#166534" : "#854d0e",
-                  }}
-                >
-                  {m.visited ? "Visitado" : "Para visitar"}
-                </span>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <FitToUser markers={fitMarkers} />
+        <MarkersLayer markers={markersData} />
       </MapContainer>
 
       {/* Legend */}
@@ -183,3 +198,5 @@ export function MapView({ restaurants }: MapViewProps) {
     </div>
   );
 }
+
+export const MapView = memo(MapViewImpl);
