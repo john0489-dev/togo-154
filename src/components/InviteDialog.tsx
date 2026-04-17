@@ -37,11 +37,14 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
   useEffect(() => {
     if (!open) return;
     setLoadingMembers(true);
-    getListMembers({ data: { listId } })
-      .then((res) => setMembers(res.members))
-      .catch(() => {})
+    getListMembers({
+      data: { listId },
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then((res) => setMembers(res.members ?? []))
+      .catch((err) => console.error("getListMembers failed", err))
       .finally(() => setLoadingMembers(false));
-  }, [open, listId]);
+  }, [open, listId, session.access_token]);
 
   if (!open) return null;
 
@@ -51,6 +54,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     try {
       const { invite } = await createInvite({
         data: { listId, role: "editor" },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
       setInviteLink(link);
@@ -68,6 +72,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     try {
       const { invite } = await createInvite({
         data: { listId, email: email.trim(), role: "editor" },
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
       setInviteLink(link);
