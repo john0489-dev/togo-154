@@ -72,6 +72,9 @@ export const addRestaurant = createServerFn({ method: "POST" })
       cuisine: z.string().max(100),
       visited: z.boolean().optional(),
       rating: z.number().min(0).max(10).optional(),
+      address: z.string().max(300).optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
     })
   )
   .handler(async ({ data, context }) => {
@@ -85,6 +88,9 @@ export const addRestaurant = createServerFn({ method: "POST" })
         cuisine: data.cuisine,
         visited: data.visited ?? false,
         rating: data.rating ?? 0,
+        address: data.address ?? null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
         added_by: userId,
       })
       .select()
