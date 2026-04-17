@@ -8,8 +8,12 @@ interface AddRestaurantDialogProps {
 }
 
 const CUISINE_OPTIONS = [
-  "Bar", "Bar de Vinhos", "Brasileiro", "Café", "Hamburgueria",
-  "Italiano", "Japonês", "Mexicano", "Outro", "Pizzaria"
+  "Árabe", "Argentino", "Bar", "Bar de Vinhos", "Brasileiro", "Café",
+  "Chinês", "Coreano", "Doceria", "Espanhol", "Francês", "Grego",
+  "Hamburgueria", "Indiano", "Italiano", "Japonês", "Mediterrâneo",
+  "Mexicano", "Padaria", "Peruano", "Pizzaria", "Português",
+  "Sorveteria", "Steakhouse", "Sushi", "Tailandês", "Vegano",
+  "Vegetariano", "Vietnamita", "Outro"
 ];
 
 export function AddRestaurantDialog({ open, onClose, onAdd }: AddRestaurantDialogProps) {
