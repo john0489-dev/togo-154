@@ -8,14 +8,14 @@ interface AddRestaurantDialogProps {
 }
 
 const CUISINE_OPTIONS = [
-  "Bar", "Bar de Vinhos", "Restaurante", "Japonês", "Italiano",
-  "Brasileiro", "Mexicano", "Café", "Pizzaria", "Hamburgueria", "Outro"
+  "Bar", "Bar de Vinhos", "Brasileiro", "Café", "Hamburgueria",
+  "Italiano", "Japonês", "Mexicano", "Outro", "Pizzaria"
 ];
 
 export function AddRestaurantDialog({ open, onClose, onAdd }: AddRestaurantDialogProps) {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
-  const [cuisine, setCuisine] = useState("Restaurante");
+  const [cuisine, setCuisine] = useState("Bar");
 
   if (!open) return null;
 
@@ -25,7 +25,7 @@ export function AddRestaurantDialog({ open, onClose, onAdd }: AddRestaurantDialo
     onAdd({ name: name.trim(), location: location.trim(), cuisine });
     setName("");
     setLocation("");
-    setCuisine("Restaurante");
+    setCuisine("Bar");
     onClose();
   };
 
