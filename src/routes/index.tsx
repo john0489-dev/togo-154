@@ -8,6 +8,7 @@ import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import togoLogo from "@/assets/togo-logo.jpeg";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 import {
@@ -357,9 +358,16 @@ function Index() {
       <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-5 shrink-0" style={{ background: "var(--hero-gradient)" }}>
         <div className="mx-auto max-w-lg">
           <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
-              <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img
+                src={togoLogo}
+                alt="To Go logo"
+                className="h-10 w-10 rounded-lg object-cover shrink-0 shadow-sm"
+              />
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
+                <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
+              </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {activeListId && activeList?.created_by === user?.id && (
