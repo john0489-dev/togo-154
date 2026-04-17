@@ -422,7 +422,23 @@ function Index() {
             </div>
           </div>
         ) : tab === "location" ? (
-          <div className="px-4 py-3 pb-20">
+          <div className="px-4 py-3 pb-20 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={handleGeocodeAll}
+                disabled={geocoding}
+                className="flex items-center gap-1.5 rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+                title="Buscar endereços reais via OpenStreetMap"
+              >
+                <Wand2 size={12} />
+                {geocoding ? "Buscando..." : "Corrigir endereços"}
+              </button>
+              {geocodeMsg && (
+                <span className="text-[11px] text-muted-foreground truncate flex-1 text-right">
+                  {geocodeMsg}
+                </span>
+              )}
+            </div>
             <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">Carregando mapa...</div>}>
               <LazyMapView restaurants={restaurants} />
             </Suspense>
