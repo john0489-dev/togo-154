@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS restaurants_list_id_norm_name_unique ON public.restaurants (list_id, LOWER(TRIM(name)));
