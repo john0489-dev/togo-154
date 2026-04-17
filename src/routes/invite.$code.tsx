@@ -34,18 +34,14 @@ function InvitePage() {
           data: { inviteCode: code },
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
-        if (result.alreadyMember) {
-          setMessage("Você já é membro desta lista!");
-        } else {
-          setMessage("Convite aceito! Você agora faz parte desta lista.");
-        }
-        setStatus("success");
+        // Auto-redirect to the shared list
+        navigate({ to: "/", search: { list: result.listId } });
       } catch (err: any) {
         setMessage(err.message || "Erro ao aceitar convite.");
         setStatus("error");
       }
     })();
-  }, [authLoading, isAuthenticated, session, code]);
+  }, [authLoading, isAuthenticated, session, code, navigate]);
 
   if (status === "loading" || authLoading) {
     return (
