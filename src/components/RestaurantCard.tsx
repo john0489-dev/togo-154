@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Trash2, CheckCircle2, Circle } from "lucide-react";
 import type { Restaurant } from "@/lib/restaurant-store";
 import { StarRating } from "./StarRating";
@@ -9,7 +10,7 @@ interface RestaurantCardProps {
   onRate: (id: string, rating: number) => void;
 }
 
-export function RestaurantCard({ restaurant, onToggleVisited, onDelete, onRate }: RestaurantCardProps) {
+function RestaurantCardImpl({ restaurant, onToggleVisited, onDelete, onRate }: RestaurantCardProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between">
