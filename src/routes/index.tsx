@@ -202,11 +202,26 @@ function Index() {
     } catch {}
   }, [session]);
 
-  const handleAdd = useCallback(async (data: { name: string; location: string; cuisine: string }) => {
+  const handleAdd = useCallback(async (data: {
+    name: string;
+    location: string;
+    cuisine: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  }) => {
     if (!activeListId || !session) return;
     try {
       await addRestaurant({
-        data: { listId: activeListId, name: data.name, location: data.location, cuisine: data.cuisine },
+        data: {
+          listId: activeListId,
+          name: data.name,
+          location: data.location,
+          cuisine: data.cuisine,
+          address: data.address,
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       loadRestaurants();
@@ -214,6 +229,37 @@ function Index() {
       console.error("Error adding restaurant:", err);
     }
   }, [activeListId, session]);
+
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
+  const handleGeocodeAll = useCallback(async () => {
+    if (!activeListId || !session || geocoding) return;
+    const missing = restaurants.filter((r) => r.latitude == null || r.longitude == null).length;
+    if (missing === 0) {
+      setGeocodeMsg("Todos os restaurantes já estão geolocalizados.");
+      setTimeout(() => setGeocodeMsg(null), 3500);
+      return;
+    }
+    if (!window.confirm(`Buscar endereços reais para ${missing} restaurante(s)? Isso pode levar alguns minutos.`)) {
+      return;
+    }
+    setGeocoding(true);
+    setGeocodeMsg(`Buscando endereços (${missing})... aguarde.`);
+    try {
+      const res = await geocodeListRestaurants({
+        data: { listId: activeListId },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setGeocodeMsg(`✓ ${res.updated} atualizado(s), ${res.failed} sem resultado.`);
+      await loadRestaurants();
+    } catch (err) {
+      console.error("Geocode error:", err);
+      setGeocodeMsg("Erro ao buscar endereços.");
+    } finally {
+      setGeocoding(false);
+      setTimeout(() => setGeocodeMsg(null), 5000);
+    }
+  }, [activeListId, session, geocoding, restaurants]);
 
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
