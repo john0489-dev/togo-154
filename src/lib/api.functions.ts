@@ -149,6 +149,103 @@ type NominatimResult = {
   class?: string;
 };
 
+const stopWords = new Set([
+  "de",
+  "da",
+  "do",
+  "dos",
+  "das",
+  "e",
+  "di",
+  "del",
+  "la",
+  "el",
+  "the",
+  "of",
+  "y",
+  "a",
+  "o",
+]);
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getNameTokens(name: string) {
+  return normalizeSearchText(name)
+    .split(" ")
+    .filter((token) => token.length >= 4 && !stopWords.has(token));
+}
+
+function isLikelyInSaoPaulo(lat: number, lon: number) {
+  return lat >= -24.2 && lat <= -23.2 && lon >= -46.95 && lon <= -46.2;
+}
+
+function scoreGeocodeResult(result: NominatimResult, name: string, location?: string | null) {
+  const display = normalizeSearchText(result.display_name);
+  const nameNormalized = normalizeSearchText(name);
+  const locationNormalized = normalizeSearchText(location || "");
+  const tokens = getNameTokens(name);
+
+  let score = 0;
+
+  if (display.includes(nameNormalized) && nameNormalized.length >= 5) score += 30;
+
+  const matchedTokens = tokens.filter((token) => display.includes(token));
+  score += matchedTokens.length * 10;
+
+  if (tokens.length === 1 && matchedTokens.length === 1 && !display.includes(nameNormalized)) {
+    score -= 8;
+  }
+
+  if (locationNormalized && display.includes(locationNormalized)) score += 10;
+  if (display.includes("sao paulo") || display.includes("são paulo")) score += 4;
+
+  if (result.class === "amenity" || result.class === "shop" || result.class === "tourism") score += 5;
+  if (
+    result.type === "restaurant" ||
+    result.type === "cafe" ||
+    result.type === "bar" ||
+    result.type === "fast_food" ||
+    result.type === "pub" ||
+    result.type === "bakery" ||
+    result.type === "ice_cream"
+  ) {
+    score += 8;
+  }
+
+  const lat = parseFloat(result.lat);
+  const lon = parseFloat(result.lon);
+  if (Number.isFinite(lat) && Number.isFinite(lon)) {
+    if ((locationNormalized.includes("sao paulo") || locationNormalized === "") && isLikelyInSaoPaulo(lat, lon)) {
+      score += 6;
+    }
+    if ((locationNormalized.includes("sao paulo") || locationNormalized === "") && !isLikelyInSaoPaulo(lat, lon)) {
+      score -= 18;
+    }
+  }
+
+  return score;
+}
+
+function pickBestGeocodeResult(results: NominatimResult[], name: string, location?: string | null) {
+  if (results.length === 0) return null;
+
+  const sorted = [...results].sort(
+    (a, b) => scoreGeocodeResult(b, name, location) - scoreGeocodeResult(a, name, location)
+  );
+  const best = sorted[0];
+  const bestScore = scoreGeocodeResult(best, name, location);
+
+  return bestScore >= 14 ? best : null;
+}
+
 async function nominatimSearch(query: string, limit = 5): Promise<NominatimResult[]> {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=${limit}&accept-language=pt-BR`;
   const res = await fetch(url, {
@@ -172,14 +269,32 @@ export const searchRestaurantAddress = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const bias = data.location?.trim() || "São Paulo, Brasil";
-    const query = `${data.name}, ${bias}`;
+    const queries = [`${data.name}, ${bias}`, `restaurante ${data.name}, ${bias}`, data.name];
+
     try {
-      const results = await nominatimSearch(query, 5);
-      const suggestions = results.map((r) => ({
-        display_name: r.display_name,
-        latitude: parseFloat(r.lat),
-        longitude: parseFloat(r.lon),
-      }));
+      const seen = new Set<string>();
+      const combined: NominatimResult[] = [];
+
+      for (const query of queries) {
+        const results = await nominatimSearch(query, 5);
+        for (const result of results) {
+          const key = `${result.lat},${result.lon},${result.display_name}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            combined.push(result);
+          }
+        }
+      }
+
+      const suggestions = combined
+        .sort((a, b) => scoreGeocodeResult(b, data.name, data.location) - scoreGeocodeResult(a, data.name, data.location))
+        .slice(0, 5)
+        .map((r) => ({
+          display_name: r.display_name,
+          latitude: parseFloat(r.lat),
+          longitude: parseFloat(r.lon),
+        }));
+
       return { suggestions };
     } catch (err) {
       console.error("[searchRestaurantAddress]", err);
@@ -201,6 +316,7 @@ export const geocodeListRestaurants = createServerFn({ method: "POST" })
       .select("id, name, location, latitude, longitude")
       .eq("list_id", data.listId)
       .or("latitude.is.null,longitude.is.null")
+      .neq("address", "__not_found__")
       .limit(BATCH_SIZE);
 
     if (error) safeError("geocodeListRestaurants:fetch", error);
@@ -212,19 +328,31 @@ export const geocodeListRestaurants = createServerFn({ method: "POST" })
     for (let i = 0; i < pending.length; i++) {
       const r: any = pending[i];
       const bias = r.location?.trim() || "São Paulo, Brasil";
-      const query = `${r.name}, ${bias}`;
+      const queries = [`${r.name}, ${bias}`, `restaurante ${r.name}, ${bias}`, `${r.name} ${bias}`];
+
       try {
-        const results = await nominatimSearch(query, 1);
-        if (results.length > 0) {
-          const top = results[0];
+        let best: NominatimResult | null = null;
+
+        for (let qIndex = 0; qIndex < queries.length; qIndex++) {
+          const results = await nominatimSearch(queries[qIndex], 5);
+          best = pickBestGeocodeResult(results, r.name, r.location);
+          if (best) break;
+
+          if (qIndex < queries.length - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1100));
+          }
+        }
+
+        if (best) {
           const { error: upErr } = await supabase
             .from("restaurants")
             .update({
-              latitude: parseFloat(top.lat),
-              longitude: parseFloat(top.lon),
-              address: top.display_name,
+              latitude: parseFloat(best.lat),
+              longitude: parseFloat(best.lon),
+              address: best.display_name,
             })
             .eq("id", r.id);
+
           if (upErr) {
             console.error("[geocodeListRestaurants:update]", upErr);
             failed++;
@@ -232,8 +360,6 @@ export const geocodeListRestaurants = createServerFn({ method: "POST" })
             updated++;
           }
         } else {
-          // Mark as failed by setting coordinates to 0,0 sentinel? No — leave null,
-          // but to avoid infinite loops we set address to a marker.
           await supabase
             .from("restaurants")
             .update({ address: "__not_found__" })
@@ -244,13 +370,12 @@ export const geocodeListRestaurants = createServerFn({ method: "POST" })
         console.error("[geocodeListRestaurants:fetch]", err);
         failed++;
       }
-      // Be polite with Nominatim (max 1 req/sec). Skip delay after last item.
+
       if (i < pending.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, 1100));
       }
     }
 
-    // Count remaining still-missing rows (excluding ones marked __not_found__)
     const { count: remaining } = await supabase
       .from("restaurants")
       .select("*", { count: "exact", head: true })

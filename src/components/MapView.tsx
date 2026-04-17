@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, memo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { getCoords, jitter } from "@/lib/neighborhood-coords";
 
 // Fix default marker icons not loading in bundlers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -56,7 +55,6 @@ function FitToUser({ markers }: { markers: { lat: number; lng: number }[] }) {
     let cancelled = false;
 
     if (!navigator.geolocation) {
-      // No geolocation — fall back to markers
       if (markers.length > 0) {
         const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
         map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
@@ -72,7 +70,6 @@ function FitToUser({ markers }: { markers: { lat: number; lng: number }[] }) {
       },
       () => {
         if (cancelled) return;
-        // Permission denied or error — fit to markers
         if (markers.length > 0) {
           const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng]));
           map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
@@ -81,7 +78,9 @@ function FitToUser({ markers }: { markers: { lat: number; lng: number }[] }) {
       { enableHighAccuracy: true, timeout: 5000 }
     );
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [map, markers]);
 
   return null;
@@ -99,7 +98,6 @@ type MarkerData = {
   lng: number;
 };
 
-// Memoized markers layer — only re-renders when marker positions/visited change
 const MarkersLayer = memo(function MarkersLayer({ markers }: { markers: MarkerData[] }) {
   return (
     <>
@@ -109,9 +107,7 @@ const MarkersLayer = memo(function MarkersLayer({ markers }: { markers: MarkerDa
             <div className="text-sm">
               <p className="font-semibold text-foreground">{m.name}</p>
               <p className="text-xs text-muted-foreground">{m.cuisine} • {m.location}</p>
-              {m.address && (
-                <p className="mt-1 text-[11px] text-muted-foreground italic">{m.address}</p>
-              )}
+              {m.address && <p className="mt-1 text-[11px] text-muted-foreground italic">{m.address}</p>}
               {m.visited && m.rating > 0 && (
                 <p className="mt-1 text-xs font-medium" style={{ color: "#22c55e" }}>
                   ⭐ {m.rating}/10
@@ -136,21 +132,13 @@ const MarkersLayer = memo(function MarkersLayer({ markers }: { markers: MarkerDa
 
 function MapViewImpl({ restaurants }: MapViewProps) {
   const markersData = useMemo<MarkerData[]>(() => {
-    const result: MarkerData[] = [];
-    restaurants.forEach((r, i) => {
-      if (r.latitude != null && r.longitude != null) {
-        result.push({ ...r, lat: r.latitude, lng: r.longitude });
-        return;
-      }
-      const coords = getCoords(r.location);
-      if (!coords) return;
-      const jittered = jitter(coords, i);
-      result.push({ ...r, lat: jittered.lat, lng: jittered.lng });
-    });
-    return result;
+    return restaurants
+      .filter((r) => r.latitude != null && r.longitude != null)
+      .map((r) => ({ ...r, lat: r.latitude as number, lng: r.longitude as number }));
   }, [restaurants]);
 
-  // Stable signature for FitToUser so it doesn't re-fit on every visited toggle
+  const unresolvedCount = restaurants.length - markersData.length;
+
   const fitMarkers = useMemo(
     () => markersData.map((m) => ({ lat: m.lat, lng: m.lng })),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,8 +147,9 @@ function MapViewImpl({ restaurants }: MapViewProps) {
 
   if (markersData.length === 0) {
     return (
-      <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
-        Nenhum restaurante com localização para mostrar no mapa.
+      <div className="flex flex-col items-center justify-center gap-2 py-20 text-sm text-muted-foreground">
+        <p>Nenhum restaurante com localização precisa para mostrar no mapa.</p>
+        {restaurants.length > 0 && <p className="text-xs">Estou corrigindo os endereços automaticamente em segundo plano.</p>}
       </div>
     );
   }
@@ -182,7 +171,6 @@ function MapViewImpl({ restaurants }: MapViewProps) {
         <MarkersLayer markers={markersData} />
       </MapContainer>
 
-      {/* Legend */}
       <div className="absolute bottom-4 left-4 z-[1000] rounded-lg border border-border bg-card/95 px-3 py-2 shadow-md backdrop-blur-sm">
         <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1.5">
@@ -194,6 +182,7 @@ function MapViewImpl({ restaurants }: MapViewProps) {
             Para visitar
           </span>
         </div>
+        {unresolvedCount > 0 && <p className="mt-2 text-[11px] text-muted-foreground">{unresolvedCount} ainda sem localização precisa.</p>}
       </div>
     </div>
   );
