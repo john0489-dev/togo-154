@@ -33,6 +33,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
   const [error, setError] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"editor" | "viewer">("editor");
 
   useEffect(() => {
     if (!open) return;
