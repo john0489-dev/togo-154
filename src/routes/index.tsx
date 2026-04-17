@@ -42,6 +42,9 @@ type Restaurant = {
   rating: number;
   list_id: string;
   added_by: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  address?: string | null;
 };
 type ListItem = {
   id: string;
