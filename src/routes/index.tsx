@@ -82,10 +82,9 @@ function IndexWrapper() {
 function Index() {
   const { user, session } = useAuth();
   const navigate = useNavigate();
-  const search = Route.useSearch();
-  const navigate = useNavigate();
+  const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
-  const [activeListId, setActiveListId] = useState<string | null>(search.list ?? null);
+  const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [tab, setTab] = useState<Tab>("list");
   const [search, setSearch] = useState("");
