@@ -244,20 +244,28 @@ function Index() {
       return;
     }
     setGeocoding(true);
-    setGeocodeMsg(`Buscando endereços (${missing})... aguarde.`);
+    let totalUpdated = 0;
+    let totalFailed = 0;
+    let safety = 50; // max ~400 items
     try {
-      const res = await geocodeListRestaurants({
-        data: { listId: activeListId },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      setGeocodeMsg(`✓ ${res.updated} atualizado(s), ${res.failed} sem resultado.`);
+      while (safety-- > 0) {
+        const res = await geocodeListRestaurants({
+          data: { listId: activeListId },
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        totalUpdated += res.updated;
+        totalFailed += res.failed;
+        setGeocodeMsg(`Buscando... ${totalUpdated} atualizados, ${res.remaining} restantes.`);
+        if (res.processed === 0 || res.remaining === 0) break;
+      }
+      setGeocodeMsg(`✓ ${totalUpdated} atualizado(s), ${totalFailed} sem resultado.`);
       await loadRestaurants();
     } catch (err) {
       console.error("Geocode error:", err);
-      setGeocodeMsg("Erro ao buscar endereços.");
+      setGeocodeMsg("Erro ao buscar endereços. Tente novamente.");
     } finally {
       setGeocoding(false);
-      setTimeout(() => setGeocodeMsg(null), 5000);
+      setTimeout(() => setGeocodeMsg(null), 6000);
     }
   }, [activeListId, session, geocoding, restaurants]);
 
