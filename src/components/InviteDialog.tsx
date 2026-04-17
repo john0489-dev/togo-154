@@ -33,6 +33,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
   const [error, setError] = useState("");
   const [members, setMembers] = useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"editor" | "viewer">("editor");
 
   useEffect(() => {
     if (!open) return;
@@ -53,7 +54,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     setError("");
     try {
       const { invite } = await createInvite({
-        data: { listId, role: "editor" },
+        data: { listId, role: selectedRole },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
@@ -71,7 +72,7 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
     setError("");
     try {
       const { invite } = await createInvite({
-        data: { listId, email: email.trim(), role: "editor" },
+        data: { listId, email: email.trim(), role: selectedRole },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const link = `${window.location.origin}/invite/${invite.invite_code}`;
@@ -154,6 +155,49 @@ export function InviteDialog({ open, onClose, listId, session }: InviteDialogPro
         )}
 
         <div className="space-y-4">
+          {/* Role selector */}
+          <div>
+            <p className="text-sm font-medium text-card-foreground mb-2">Permissão</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole("editor");
+                  setInviteLink("");
+                }}
+                className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                  selectedRole === "editor"
+                    ? "border-primary bg-primary/10"
+                    : "border-input bg-background hover:bg-accent"
+                }`}
+              >
+                <Pencil size={16} className={selectedRole === "editor" ? "text-primary mt-0.5" : "text-muted-foreground mt-0.5"} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium ${selectedRole === "editor" ? "text-primary" : "text-foreground"}`}>Editor</p>
+                  <p className="text-xs text-muted-foreground">Pode adicionar e editar</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedRole("viewer");
+                  setInviteLink("");
+                }}
+                className={`flex items-start gap-2 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                  selectedRole === "viewer"
+                    ? "border-primary bg-primary/10"
+                    : "border-input bg-background hover:bg-accent"
+                }`}
+              >
+                <Eye size={16} className={selectedRole === "viewer" ? "text-primary mt-0.5" : "text-muted-foreground mt-0.5"} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium ${selectedRole === "viewer" ? "text-primary" : "text-foreground"}`}>Visualizador</p>
+                  <p className="text-xs text-muted-foreground">Apenas visualizar</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Generate link */}
           <div>
             <p className="text-sm font-medium text-card-foreground mb-2">Link de convite</p>
