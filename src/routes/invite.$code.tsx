@@ -73,7 +73,7 @@ function InvitePage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-sm text-center">
-        <h1 className="text-2xl font-bold text-foreground">ToGo</h1>
+        <h1 className="text-2xl font-bold text-foreground">To Go</h1>
         <div className={`mt-4 rounded-lg px-4 py-3 text-sm ${status === "success" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
           {message}
         </div>
