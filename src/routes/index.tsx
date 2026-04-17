@@ -17,6 +17,7 @@ import {
   updateRestaurant,
   deleteRestaurant,
   createList,
+  deleteList,
   seedDefaultRestaurants,
   geocodeListRestaurants,
 } from "@/lib/api.functions";
