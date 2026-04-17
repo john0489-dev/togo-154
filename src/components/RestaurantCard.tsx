@@ -68,3 +68,5 @@ function RestaurantCardImpl({ restaurant, onToggleVisited, onDelete, onRate }: R
     </div>
   );
 }
+
+export const RestaurantCard = memo(RestaurantCardImpl);
