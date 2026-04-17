@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2 } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
@@ -232,21 +232,28 @@ function Index() {
 
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
-  const handleGeocodeAll = useCallback(async () => {
+  const autoGeocodeStartedRef = useRef<string | null>(null);
+
+  const runGeocode = useCallback(async (interactive = false) => {
     if (!activeListId || !session || geocoding) return;
     const missing = restaurants.filter((r) => r.latitude == null || r.longitude == null).length;
     if (missing === 0) {
-      setGeocodeMsg("Todos os restaurantes já estão geolocalizados.");
-      setTimeout(() => setGeocodeMsg(null), 3500);
+      if (interactive) {
+        setGeocodeMsg("Todos os restaurantes já estão geolocalizados.");
+        setTimeout(() => setGeocodeMsg(null), 3500);
+      }
       return;
     }
-    if (!window.confirm(`Buscar endereços reais para ${missing} restaurante(s)? Isso pode levar alguns minutos.`)) {
+    if (
+      interactive &&
+      !window.confirm(`Buscar endereços reais para ${missing} restaurante(s)? Isso pode levar alguns minutos.`)
+    ) {
       return;
     }
     setGeocoding(true);
     let totalUpdated = 0;
     let totalFailed = 0;
-    let safety = 50; // max ~400 items
+    let safety = 50;
     try {
       while (safety-- > 0) {
         const res = await geocodeListRestaurants({
@@ -255,19 +262,35 @@ function Index() {
         });
         totalUpdated += res.updated;
         totalFailed += res.failed;
-        setGeocodeMsg(`Buscando... ${totalUpdated} atualizados, ${res.remaining} restantes.`);
+        setGeocodeMsg(`Corrigindo endereços... ${totalUpdated} atualizados, ${res.remaining} restantes.`);
         if (res.processed === 0 || res.remaining === 0) break;
       }
       setGeocodeMsg(`✓ ${totalUpdated} atualizado(s), ${totalFailed} sem resultado.`);
       await loadRestaurants();
     } catch (err) {
       console.error("Geocode error:", err);
-      setGeocodeMsg("Erro ao buscar endereços. Tente novamente.");
+      if (interactive) {
+        setGeocodeMsg("Erro ao buscar endereços. Tente novamente.");
+      }
     } finally {
       setGeocoding(false);
       setTimeout(() => setGeocodeMsg(null), 6000);
     }
   }, [activeListId, session, geocoding, restaurants]);
+
+  const handleGeocodeAll = useCallback(async () => {
+    await runGeocode(true);
+  }, [runGeocode]);
+
+  useEffect(() => {
+    if (!activeListId || !session || geocoding || restaurants.length === 0) return;
+    const hasMissing = restaurants.some((r) => r.latitude == null || r.longitude == null);
+    if (!hasMissing) return;
+    if (autoGeocodeStartedRef.current === activeListId) return;
+
+    autoGeocodeStartedRef.current = activeListId;
+    void runGeocode(false);
+  }, [activeListId, session, geocoding, restaurants, runGeocode]);
 
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
@@ -278,6 +301,7 @@ function Index() {
       });
       setLists((prev) => [{ id: list.id, name: list.name, created_by: list.created_by }, ...prev]);
       setActiveListId(list.id);
+      autoGeocodeStartedRef.current = null;
       setNewListName("");
       setListDropdown(false);
     } catch (err) {
