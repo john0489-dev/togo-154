@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown } from "lucide-react";
+import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2 } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
@@ -18,6 +18,7 @@ import {
   deleteRestaurant,
   createList,
   seedDefaultRestaurants,
+  geocodeListRestaurants,
 } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/")({
@@ -41,6 +42,9 @@ type Restaurant = {
   rating: number;
   list_id: string;
   added_by: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  address?: string | null;
 };
 type ListItem = {
   id: string;
@@ -198,11 +202,26 @@ function Index() {
     } catch {}
   }, [session]);
 
-  const handleAdd = useCallback(async (data: { name: string; location: string; cuisine: string }) => {
+  const handleAdd = useCallback(async (data: {
+    name: string;
+    location: string;
+    cuisine: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  }) => {
     if (!activeListId || !session) return;
     try {
       await addRestaurant({
-        data: { listId: activeListId, name: data.name, location: data.location, cuisine: data.cuisine },
+        data: {
+          listId: activeListId,
+          name: data.name,
+          location: data.location,
+          cuisine: data.cuisine,
+          address: data.address,
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       loadRestaurants();
@@ -210,6 +229,37 @@ function Index() {
       console.error("Error adding restaurant:", err);
     }
   }, [activeListId, session]);
+
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
+  const handleGeocodeAll = useCallback(async () => {
+    if (!activeListId || !session || geocoding) return;
+    const missing = restaurants.filter((r) => r.latitude == null || r.longitude == null).length;
+    if (missing === 0) {
+      setGeocodeMsg("Todos os restaurantes já estão geolocalizados.");
+      setTimeout(() => setGeocodeMsg(null), 3500);
+      return;
+    }
+    if (!window.confirm(`Buscar endereços reais para ${missing} restaurante(s)? Isso pode levar alguns minutos.`)) {
+      return;
+    }
+    setGeocoding(true);
+    setGeocodeMsg(`Buscando endereços (${missing})... aguarde.`);
+    try {
+      const res = await geocodeListRestaurants({
+        data: { listId: activeListId },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setGeocodeMsg(`✓ ${res.updated} atualizado(s), ${res.failed} sem resultado.`);
+      await loadRestaurants();
+    } catch (err) {
+      console.error("Geocode error:", err);
+      setGeocodeMsg("Erro ao buscar endereços.");
+    } finally {
+      setGeocoding(false);
+      setTimeout(() => setGeocodeMsg(null), 5000);
+    }
+  }, [activeListId, session, geocoding, restaurants]);
 
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
@@ -372,7 +422,23 @@ function Index() {
             </div>
           </div>
         ) : tab === "location" ? (
-          <div className="px-4 py-3 pb-20">
+          <div className="px-4 py-3 pb-20 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={handleGeocodeAll}
+                disabled={geocoding}
+                className="flex items-center gap-1.5 rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+                title="Buscar endereços reais via OpenStreetMap"
+              >
+                <Wand2 size={12} />
+                {geocoding ? "Buscando..." : "Corrigir endereços"}
+              </button>
+              {geocodeMsg && (
+                <span className="text-[11px] text-muted-foreground truncate flex-1 text-right">
+                  {geocodeMsg}
+                </span>
+              )}
+            </div>
             <Suspense fallback={<div className="flex items-center justify-center py-20 text-sm text-muted-foreground">Carregando mapa...</div>}>
               <LazyMapView restaurants={restaurants} />
             </Suspense>
@@ -417,7 +483,14 @@ function Index() {
         </div>
       </nav>
 
-      <AddRestaurantDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onAdd={handleAdd} />
+      {session && (
+        <AddRestaurantDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onAdd={handleAdd}
+          session={session}
+        />
+      )}
       {activeListId && (
         <InviteDialog
           open={inviteOpen}

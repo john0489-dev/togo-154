@@ -39,6 +39,9 @@ type Restaurant = {
   cuisine: string;
   visited: boolean;
   rating: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  address?: string | null;
 };
 
 interface MapViewProps {
@@ -93,11 +96,18 @@ export function MapView({ restaurants }: MapViewProps) {
       cuisine: string;
       visited: boolean;
       rating: number;
+      address?: string | null;
       lat: number;
       lng: number;
     }[] = [];
 
     restaurants.forEach((r, i) => {
+      // Prefer real geocoded coords from the database
+      if (r.latitude != null && r.longitude != null) {
+        result.push({ ...r, lat: r.latitude, lng: r.longitude });
+        return;
+      }
+      // Fallback: approximate neighborhood coords (with jitter)
       const coords = getCoords(r.location);
       if (!coords) return;
       const jittered = jitter(coords, i);
@@ -134,6 +144,9 @@ export function MapView({ restaurants }: MapViewProps) {
               <div className="text-sm">
                 <p className="font-semibold text-foreground">{m.name}</p>
                 <p className="text-xs text-muted-foreground">{m.cuisine} • {m.location}</p>
+                {m.address && (
+                  <p className="mt-1 text-[11px] text-muted-foreground italic">{m.address}</p>
+                )}
                 {m.visited && m.rating > 0 && (
                   <p className="mt-1 text-xs font-medium" style={{ color: "#22c55e" }}>
                     ⭐ {m.rating}/10

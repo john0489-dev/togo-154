@@ -139,11 +139,14 @@ export type Database = {
       restaurants: {
         Row: {
           added_by: string | null
+          address: string | null
           created_at: string
           cuisine: string
           id: string
+          latitude: number | null
           list_id: string
           location: string
+          longitude: number | null
           name: string
           rating: number
           updated_at: string
@@ -151,11 +154,14 @@ export type Database = {
         }
         Insert: {
           added_by?: string | null
+          address?: string | null
           created_at?: string
           cuisine?: string
           id?: string
+          latitude?: number | null
           list_id: string
           location?: string
+          longitude?: number | null
           name: string
           rating?: number
           updated_at?: string
@@ -163,11 +169,14 @@ export type Database = {
         }
         Update: {
           added_by?: string | null
+          address?: string | null
           created_at?: string
           cuisine?: string
           id?: string
+          latitude?: number | null
           list_id?: string
           location?: string
+          longitude?: number | null
           name?: string
           rating?: number
           updated_at?: string

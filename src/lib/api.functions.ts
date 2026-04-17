@@ -72,6 +72,9 @@ export const addRestaurant = createServerFn({ method: "POST" })
       cuisine: z.string().max(100),
       visited: z.boolean().optional(),
       rating: z.number().min(0).max(10).optional(),
+      address: z.string().max(300).optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
     })
   )
   .handler(async ({ data, context }) => {
@@ -85,6 +88,9 @@ export const addRestaurant = createServerFn({ method: "POST" })
         cuisine: data.cuisine,
         visited: data.visited ?? false,
         rating: data.rating ?? 0,
+        address: data.address ?? null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
         added_by: userId,
       })
       .select()
@@ -102,20 +108,138 @@ export const updateRestaurant = createServerFn({ method: "POST" })
       id: z.string().uuid(),
       visited: z.boolean().optional(),
       rating: z.number().min(0).max(10).optional(),
+      location: z.string().max(300).optional(),
+      address: z.string().max(300).optional(),
+      latitude: z.number().optional(),
+      longitude: z.number().optional(),
     })
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    const update: {
+      visited?: boolean;
+      rating?: number;
+      location?: string;
+      address?: string;
+      latitude?: number;
+      longitude?: number;
+    } = {};
+    if (data.visited !== undefined) update.visited = data.visited;
+    if (data.rating !== undefined) update.rating = data.rating;
+    if (data.location !== undefined) update.location = data.location;
+    if (data.address !== undefined) update.address = data.address;
+    if (data.latitude !== undefined) update.latitude = data.latitude;
+    if (data.longitude !== undefined) update.longitude = data.longitude;
+
     const { error } = await supabase
       .from("restaurants")
-      .update({
-        ...(data.visited !== undefined ? { visited: data.visited } : {}),
-        ...(data.rating !== undefined ? { rating: data.rating } : {}),
-      })
+      .update(update)
       .eq("id", data.id);
 
     if (error) safeError("updateRestaurant", error);
     return { success: true };
+  });
+
+// ----- Geocoding via Nominatim (OpenStreetMap) -----
+type NominatimResult = {
+  display_name: string;
+  lat: string;
+  lon: string;
+  type?: string;
+  class?: string;
+};
+
+async function nominatimSearch(query: string, limit = 5): Promise<NominatimResult[]> {
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=${limit}&accept-language=pt-BR`;
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "ToGo-Restaurants-App/1.0 (lovable.dev)",
+      "Accept-Language": "pt-BR,pt;q=0.9",
+    },
+  });
+  if (!res.ok) return [];
+  return (await res.json()) as NominatimResult[];
+}
+
+// Search restaurant address suggestions by name (+ optional location bias)
+export const searchRestaurantAddress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    z.object({
+      name: z.string().min(2).max(200),
+      location: z.string().max(200).optional(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const bias = data.location?.trim() || "São Paulo, Brasil";
+    const query = `${data.name}, ${bias}`;
+    try {
+      const results = await nominatimSearch(query, 5);
+      const suggestions = results.map((r) => ({
+        display_name: r.display_name,
+        latitude: parseFloat(r.lat),
+        longitude: parseFloat(r.lon),
+      }));
+      return { suggestions };
+    } catch (err) {
+      console.error("[searchRestaurantAddress]", err);
+      return { suggestions: [] };
+    }
+  });
+
+// Geocode all restaurants in a list that don't yet have coordinates
+export const geocodeListRestaurants = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(z.object({ listId: z.string().uuid() }))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase
+      .from("restaurants")
+      .select("id, name, location, latitude, longitude")
+      .eq("list_id", data.listId);
+
+    if (error) safeError("geocodeListRestaurants:fetch", error);
+
+    const pending = (rows ?? []).filter(
+      (r: any) => r.latitude == null || r.longitude == null
+    );
+
+    let updated = 0;
+    let failed = 0;
+
+    for (const r of pending) {
+      const bias = r.location?.trim() || "São Paulo, Brasil";
+      const query = `${r.name}, ${bias}`;
+      try {
+        const results = await nominatimSearch(query, 1);
+        if (results.length > 0) {
+          const top = results[0];
+          const { error: upErr } = await supabase
+            .from("restaurants")
+            .update({
+              latitude: parseFloat(top.lat),
+              longitude: parseFloat(top.lon),
+              address: top.display_name,
+            })
+            .eq("id", r.id);
+          if (upErr) {
+            console.error("[geocodeListRestaurants:update]", upErr);
+            failed++;
+          } else {
+            updated++;
+          }
+        } else {
+          failed++;
+        }
+      } catch (err) {
+        console.error("[geocodeListRestaurants:fetch]", err);
+        failed++;
+      }
+      // Be polite with Nominatim's free tier (max 1 req/sec)
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+    }
+
+    return { total: pending.length, updated, failed };
   });
 
 // Delete a restaurant
