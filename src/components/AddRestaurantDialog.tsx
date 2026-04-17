@@ -25,7 +25,7 @@ export function AddRestaurantDialog({ open, onClose, onAdd }: AddRestaurantDialo
     onAdd({ name: name.trim(), location: location.trim(), cuisine });
     setName("");
     setLocation("");
-    setCuisine("Restaurante");
+    setCuisine("Bar");
     onClose();
   };
 
