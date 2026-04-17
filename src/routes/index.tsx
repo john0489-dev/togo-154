@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
   }),
   head: () => ({
     meta: [
-      { title: "ToGo — Sua lista pessoal de restaurantes" },
+      { title: "To Go — Sua lista pessoal de restaurantes" },
       { name: "description", content: "Gerencie sua lista pessoal de restaurantes e bares para visitar." },
     ],
   }),
@@ -358,7 +358,7 @@ function Index() {
         <div className="mx-auto max-w-lg">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">ToGo</h1>
+              <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
               <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">

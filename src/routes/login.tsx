@@ -6,8 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "ToGo — Entrar" },
-      { name: "description", content: "Faça login na sua conta ToGo." },
+      { title: "To Go — Entrar" },
+      { name: "description", content: "Faça login na sua conta To Go." },
     ],
   }),
   component: LoginPage,
@@ -59,7 +59,7 @@ function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">ToGo</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">To Go</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {isSignUp ? "Crie sua conta" : "Entre na sua conta"}
           </p>
