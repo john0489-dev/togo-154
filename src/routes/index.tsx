@@ -483,7 +483,14 @@ function Index() {
         </div>
       </nav>
 
-      <AddRestaurantDialog open={dialogOpen} onClose={() => setDialogOpen(false)} onAdd={handleAdd} />
+      {session && (
+        <AddRestaurantDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          onAdd={handleAdd}
+          session={session}
+        />
+      )}
       {activeListId && (
         <InviteDialog
           open={inviteOpen}
