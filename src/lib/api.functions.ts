@@ -168,7 +168,7 @@ export const getListMembers = createServerFn({ method: "POST" })
     const { supabase } = context;
     const { data: members, error } = await supabase
       .from("list_members")
-      .select("user_id, role, joined_at, profiles(email)")
+      .select("user_id, role, joined_at, profiles!list_members_user_id_profiles_fkey(email)")
       .eq("list_id", data.listId)
       .order("joined_at", { ascending: true });
 
