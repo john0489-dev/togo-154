@@ -307,6 +307,17 @@ function Index() {
     void runGeocode(false);
   }, [activeListId, session, geocoding, restaurants, runGeocode]);
 
+  useEffect(() => {
+    if (!cuisineDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (cuisineDropdownRef.current && !cuisineDropdownRef.current.contains(e.target as Node)) {
+        setCuisineDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [cuisineDropdownOpen]);
+
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
     try {
