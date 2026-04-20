@@ -79,6 +79,7 @@ function InvitePage() {
         </div>
         <Link
           to="/"
+          search={{ list: undefined }}
           className="mt-4 inline-block rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground"
         >
           Ir para minhas listas

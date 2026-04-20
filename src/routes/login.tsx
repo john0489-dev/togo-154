@@ -24,7 +24,7 @@ function LoginPage() {
   const [message, setMessage] = useState("");
 
   if (isAuthenticated) {
-    navigate({ to: "/" });
+    navigate({ to: "/", search: { list: undefined } });
     return null;
   }
 
@@ -46,7 +46,7 @@ function LoginPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/" });
+        navigate({ to: "/", search: { list: undefined } });
       }
     } catch (err: any) {
       setError(err.message || "Erro ao autenticar");
