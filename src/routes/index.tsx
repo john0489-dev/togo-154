@@ -489,16 +489,56 @@ function Index() {
                 <option value="visited">Visitados</option>
                 <option value="to-visit">Para Visitar</option>
               </select>
-              <select
-                value={cuisineFilter}
-                onChange={(e) => setCuisineFilter(e.target.value)}
-                className="flex-1 rounded-lg border border-input bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="all">Todas</option>
-                {cuisines.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+              <div ref={cuisineDropdownRef} className="flex-1 relative">
+                <button
+                  type="button"
+                  onClick={() => setCuisineDropdownOpen((o) => !o)}
+                  className={`w-full rounded-lg border bg-card px-3 py-2 text-sm text-left text-foreground focus:outline-none focus:ring-2 focus:ring-ring flex items-center justify-between gap-2 ${cuisineFilter.length > 0 ? "border-primary" : "border-input"}`}
+                >
+                  <span className="truncate">
+                    {cuisineFilter.length === 0
+                      ? "Todas"
+                      : cuisineFilter.length === 1
+                      ? cuisineFilter[0]
+                      : `${cuisineFilter.length} selecionadas`}
+                  </span>
+                  <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+                </button>
+                {cuisineDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 z-30 mt-1 rounded-lg border border-border bg-card shadow-lg overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => { setCuisineFilter([]); setCuisineDropdownOpen(false); }}
+                      className={`w-full px-3 py-2 text-left text-sm border-b border-border active:bg-accent transition-colors ${cuisineFilter.length === 0 ? "font-medium text-primary" : "text-foreground"}`}
+                    >
+                      Todas
+                    </button>
+                    <div className="max-h-56 overflow-y-auto">
+                      {cuisines.map((c) => {
+                        const checked = cuisineFilter.includes(c);
+                        return (
+                          <label
+                            key={c}
+                            className="flex items-center gap-2 px-3 py-2 text-sm text-foreground cursor-pointer active:bg-accent transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setCuisineFilter((prev) =>
+                                  prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]
+                                );
+                              }}
+                              className="h-4 w-4 rounded border-input accent-primary"
+                            />
+                            <span className="truncate">{c}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2.5 pb-20">
