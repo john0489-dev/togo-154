@@ -172,7 +172,7 @@ function Index() {
         if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
         if (statusFilter === "visited" && !r.visited) return false;
         if (statusFilter === "to-visit" && r.visited) return false;
-        if (cuisineFilter !== "all" && r.cuisine !== cuisineFilter) return false;
+        if (cuisineFilter.length > 0 && !cuisineFilter.includes(r.cuisine)) return false;
         return true;
       })
       .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
