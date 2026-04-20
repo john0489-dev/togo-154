@@ -89,7 +89,9 @@ function Index() {
   const [tab, setTab] = useState<Tab>("list");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [cuisineFilter, setCuisineFilter] = useState("all");
+  const [cuisineFilter, setCuisineFilter] = useState<string[]>([]);
+  const [cuisineDropdownOpen, setCuisineDropdownOpen] = useState(false);
+  const cuisineDropdownRef = useRef<HTMLDivElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
