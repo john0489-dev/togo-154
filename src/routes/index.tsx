@@ -165,13 +165,15 @@ function Index() {
   };
 
   const filtered = useMemo(() => {
-    return restaurants.filter((r) => {
-      if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (statusFilter === "visited" && !r.visited) return false;
-      if (statusFilter === "to-visit" && r.visited) return false;
-      if (cuisineFilter !== "all" && r.cuisine !== cuisineFilter) return false;
-      return true;
-    });
+    return restaurants
+      .filter((r) => {
+        if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
+        if (statusFilter === "visited" && !r.visited) return false;
+        if (statusFilter === "to-visit" && r.visited) return false;
+        if (cuisineFilter !== "all" && r.cuisine !== cuisineFilter) return false;
+        return true;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
   }, [restaurants, search, statusFilter, cuisineFilter]);
 
   const handleToggleVisited = useCallback(async (id: string) => {
