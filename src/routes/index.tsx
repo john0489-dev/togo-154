@@ -5,6 +5,7 @@ import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
+import { EditAddressDialog } from "@/components/EditAddressDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
