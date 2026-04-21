@@ -1,46 +1,58 @@
-- Plano: card de detalhes do restaurante ao clicar
+
+
+## Plano: painel admin com lista de cadastros
 
 ### O que vou fazer
 
-Hoje o `RestaurantCard` mostra nome, bairro, cuisine, status e nota — mas clicar nele não faz nada (só os botões internos reagem). Vou tornar o card clicável e abrir um **dialog (modal)** com mais informações do restaurante.
+Criar uma página `/admin` acessível só para você, mostrando todos os usuários que se cadastraram no app, com data e contadores. Sem custo extra, sem configurar e-mail, sem dependências externas.
 
-### Conteúdo do modal de detalhes
+### Como o controle de acesso vai funcionar
 
-Cabeçalho:
+Roles ficam em uma tabela separada (boa prática de segurança):
 
-- Nome do restaurante (grande)
-- Badge de status (Visitado / Para Visitar) com cor
-- Badge da cuisine
+1. Criar enum `app_role` com valor `admin`.
+2. Criar tabela `user_roles` (`user_id`, `role`) com RLS — usuários só leem suas próprias roles.
+3. Criar função `has_role(_user_id, _role)` com `SECURITY DEFINER` (evita recursão de RLS).
+4. **Promover você como admin** automaticamente nessa migration, usando o `created_by` da lista "Minha Lista" original (você é o único owner hoje).
 
-Corpo:
+### Onde os dados vêm
 
-- **Bairro / Localização** (`location`)
-- **Endereço completo** (`address`) — se existir, com link "Abrir no Google Maps" usando `latitude/longitude` ou o próprio endereço
-- **Avaliação** — `StarRating` interativo (mesmo componente que já usa, em tamanho maior); se ainda não foi avaliado mostra "Sem avaliação"
-- **Adicionado em** — `created_at` formatado em pt-BR
-- **Adicionado por** — buscar o email do `profiles` via `added_by` (quando existir)
+A tabela `profiles` já existe e tem `id`, `email`, `created_at` populados a cada cadastro. Uso ela como fonte — não preciso criar nada novo pra capturar cadastros.
 
-Rodapé (ações que já existem hoje, agrupadas):
+### Página `/admin`
 
-- Botão "Marcar como visitado" / "Marcar como não visitado"
-- Botão "Excluir restaurante" (com confirmação simples — `confirm()` nativo basta)
+- **Guard de acesso**: não logado → `/login`. Logado mas não admin → "Acesso negado".
+- **Header**: título "Cadastros" + botão "Voltar" (para `/`).
+- **3 cards de resumo**: Total / Últimos 7 dias / Hoje.
+- **Lista cronológica** (mais recentes primeiro):
+  - E-mail
+  - Data formatada pt-BR ("21 de abr de 2026, 14:32")
+  - Tempo relativo ("há 2 horas", "ontem", "há 3 dias")
+- **Botão "Atualizar"** pra recarregar manualmente.
+- Estilo consistente com o app (mesmo gradient, tokens).
 
-### Como será a interação
+### Acesso
 
-- Toda a área do card vira clicável (cursor pointer + hover sutil) e abre o modal.
-- Os controles internos atuais (estrelas de rating, botão visitado, lixeira) continuam funcionando direto no card sem abrir o modal — uso `e.stopPropagation()` neles para não disparar a abertura.
-- No mobile, o modal usa o mesmo `Dialog` do shadcn (já presente no projeto) com largura responsiva.
+- URL direta `/admin`.
+- Pequeno botão "Admin" no header do app — **só aparece se for admin**, pra você não precisar digitar a URL.
+
+### Server function
+
+`getAdminSignups` em `src/lib/api.functions.ts`:
+- Valida sessão.
+- Verifica `has_role(auth.uid(), 'admin')` — se não for, 403.
+- Retorna profiles (email + created_at) ordenados desc.
 
 ### Arquivos afetados
 
-1. **Novo:** `src/components/RestaurantDetailsDialog.tsx` — o modal em si, recebe `restaurant`, `open`, `onOpenChange` e os mesmos handlers (`onToggleVisited`, `onDelete`, `onRate`).
-2. **Editado:** `src/components/RestaurantCard.tsx` — wrapper clicável + estado local `detailsOpen` + `stopPropagation` nos controles internos. Renderiza o novo dialog.
+1. **Migration**: enum + `user_roles` + RLS + `has_role` + insert do seu user_id como admin.
+2. **Editado**: `src/lib/api.functions.ts` — `getAdminSignups` + helper `isAdmin`.
+3. **Novo**: `src/routes/admin.tsx` — painel.
+4. **Editado**: `src/routes/index.tsx` — botão "Admin" no header (só pra admin).
 
-Sem mudanças em banco, rotas, ou na lógica de `restaurant-store`. Reusa componentes já existentes (`Dialog`, `StarRating`, ícones do `lucide-react`).
+### O que NÃO vou fazer
 
-### Detalhes técnicos
+- Sem envio de e-mail.
+- Sem sistema de roles complexo (multi-role, permissions granulares).
+- Sem expor dados sensíveis além de email e data.
 
-- "Abrir no Google Maps": se houver `latitude` e `longitude`, link `https://www.google.com/maps/search/?api=1&query={lat},{lng}`. Senão, usa o `address` codificado.
-- "Adicionado por": pequena query `supabase.from('profiles').select('email').eq('id', added_by).maybeSingle()` disparada apenas quando o modal abre e `added_by` está preenchido (cache simples via `useState`).
-- Data formatada com `Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' })`.
-- Acessibilidade: `role="button"`, `tabIndex={0}`, abre também com Enter/Space.
