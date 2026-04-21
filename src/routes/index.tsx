@@ -607,6 +607,7 @@ function Index() {
                     onToggleVisited={handleToggleVisited}
                     onDelete={handleDelete}
                     onRate={handleRate}
+                    onEditAddress={handleEditAddress}
                   />
                 ))
               )}
