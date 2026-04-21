@@ -650,7 +650,7 @@ function Index() {
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto max-w-lg flex">
           <button
-            onClick={() => setTab("list")}
+            onClick={() => switchTab("list")}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               tab === "list" ? "text-primary" : "text-muted-foreground"
             }`}
@@ -659,7 +659,7 @@ function Index() {
             Lista
           </button>
           <button
-            onClick={() => setTab("location")}
+            onClick={() => switchTab("location")}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               tab === "location" ? "text-primary" : "text-muted-foreground"
             }`}
@@ -668,7 +668,7 @@ function Index() {
             Mapa
           </button>
           <button
-            onClick={() => setTab("nearme")}
+            onClick={() => switchTab("nearme")}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               tab === "nearme" ? "text-primary" : "text-muted-foreground"
             }`}
