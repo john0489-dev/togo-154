@@ -247,6 +247,46 @@ function Index() {
     }
   }, [activeListId, session]);
 
+  const handleSaveAddress = useCallback(async (data: {
+    id: string;
+    location: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  }) => {
+    if (!session) return;
+    setRestaurants((prev) => prev.map((r) =>
+      r.id === data.id
+        ? {
+            ...r,
+            location: data.location,
+            address: data.address ?? r.address,
+            latitude: data.latitude ?? r.latitude,
+            longitude: data.longitude ?? r.longitude,
+          }
+        : r
+    ));
+    try {
+      await updateRestaurant({
+        data: {
+          id: data.id,
+          location: data.location,
+          address: data.address,
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+    } catch (err) {
+      console.error("Error updating address:", err);
+      loadRestaurants();
+    }
+  }, [session]);
+
+  const handleEditAddress = useCallback((id: string) => {
+    setEditAddressId(id);
+  }, []);
+
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
   const autoGeocodeStartedRef = useRef<string | null>(null);
