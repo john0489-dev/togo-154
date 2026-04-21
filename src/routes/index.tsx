@@ -94,6 +94,7 @@ function Index() {
   const [cuisineDropdownOpen, setCuisineDropdownOpen] = useState(false);
   const cuisineDropdownRef = useRef<HTMLDivElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
   const [newListName, setNewListName] = useState("");
