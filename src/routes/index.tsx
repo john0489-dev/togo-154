@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, useDeferredValue } from "react";
 import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
@@ -100,12 +100,21 @@ function Index() {
   const [loading, setLoading] = useState(true);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
+  // Stable token reference for effect deps
+  const accessToken = session?.access_token;
+
+  // Refs to keep callbacks stable across re-renders
+  const restaurantsRef = useRef(restaurants);
+  const tokenRef = useRef(accessToken);
+  useEffect(() => { restaurantsRef.current = restaurants; }, [restaurants]);
+  useEffect(() => { tokenRef.current = accessToken; }, [accessToken]);
+
   useEffect(() => {
-    if (!session) return;
-    isAdminFn({ headers: { Authorization: `Bearer ${session.access_token}` } })
+    if (!accessToken) return;
+    isAdminFn({ headers: { Authorization: `Bearer ${accessToken}` } })
       .then(({ isAdmin }) => setIsUserAdmin(isAdmin))
       .catch(() => setIsUserAdmin(false));
-  }, [session]);
+  }, [accessToken]);
 
   const totalCount = restaurants.length;
   const visitedCount = useMemo(() => restaurants.filter((r) => r.visited).length, [restaurants]);
@@ -117,20 +126,20 @@ function Index() {
 
   // Load lists
   useEffect(() => {
-    if (!session) return;
+    if (!accessToken) return;
     loadLists();
-  }, [session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken]);
 
   const loadLists = async () => {
+    if (!tokenRef.current) return;
     try {
       const { lists: data } = await getUserLists({
-        headers: { Authorization: `Bearer ${session!.access_token}` },
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
       });
-      console.log("[loadLists] raw:", data);
       const mapped = data
         .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
         .filter((l) => !!l.id);
-      console.log("[loadLists] mapped:", mapped);
       setLists(mapped);
       if (mapped.length > 0) {
         setActiveListId((prev) => prev ?? mapped[0].id);
@@ -138,14 +147,14 @@ function Index() {
         // No memberships — create default list
         const { list } = await createList({
           data: { name: "Minha Lista" },
-          headers: { Authorization: `Bearer ${session!.access_token}` },
+          headers: { Authorization: `Bearer ${tokenRef.current}` },
         });
         setLists([{ id: list.id, name: list.name, created_by: list.created_by }]);
         setActiveListId(list.id);
         // Seed default restaurants
         await seedDefaultRestaurants({
           data: { listId: list.id },
-          headers: { Authorization: `Bearer ${session!.access_token}` },
+          headers: { Authorization: `Bearer ${tokenRef.current}` },
         });
       }
     } catch (err) {
@@ -155,17 +164,18 @@ function Index() {
 
   // Load restaurants when active list changes
   useEffect(() => {
-    if (!activeListId || !session) return;
+    if (!activeListId || !accessToken) return;
     loadRestaurants();
-  }, [activeListId, session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeListId, accessToken]);
 
   const loadRestaurants = async () => {
-    if (!activeListId || !session) return;
+    if (!activeListId || !tokenRef.current) return;
     setLoading(true);
     try {
       const { restaurants: data } = await getRestaurants({
         data: { listId: activeListId },
-        headers: { Authorization: `Bearer ${session!.access_token}` },
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
       });
       setRestaurants(data as Restaurant[]);
     } catch (err) {
