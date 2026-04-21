@@ -691,6 +691,15 @@ function Index() {
           session={session!}
         />
       )}
+      {session && (
+        <EditAddressDialog
+          open={editAddressId !== null}
+          onClose={() => setEditAddressId(null)}
+          session={session}
+          restaurant={restaurants.find((r) => r.id === editAddressId) ?? null}
+          onSave={handleSaveAddress}
+        />
+      )}
     </div>
   );
 }
