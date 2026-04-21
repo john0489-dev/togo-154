@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef, useDeferredValue } from "react";
 import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
@@ -88,6 +88,14 @@ function Index() {
   const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [tab, setTab] = useState<Tab>("list");
+  const [mountedTabs, setMountedTabs] = useState<{ location: boolean; nearme: boolean }>({ location: false, nearme: false });
+
+  const switchTab = useCallback((next: Tab) => {
+    setTab(next);
+    if (next === "location" || next === "nearme") {
+      setMountedTabs((prev) => (prev[next] ? prev : { ...prev, [next]: true }));
+    }
+  }, []);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [cuisineFilter, setCuisineFilter] = useState<string[]>([]);
@@ -100,12 +108,21 @@ function Index() {
   const [loading, setLoading] = useState(true);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
+  // Stable token reference for effect deps
+  const accessToken = session?.access_token;
+
+  // Refs to keep callbacks stable across re-renders
+  const restaurantsRef = useRef(restaurants);
+  const tokenRef = useRef(accessToken);
+  useEffect(() => { restaurantsRef.current = restaurants; }, [restaurants]);
+  useEffect(() => { tokenRef.current = accessToken; }, [accessToken]);
+
   useEffect(() => {
-    if (!session) return;
-    isAdminFn({ headers: { Authorization: `Bearer ${session.access_token}` } })
+    if (!accessToken) return;
+    isAdminFn({ headers: { Authorization: `Bearer ${accessToken}` } })
       .then(({ isAdmin }) => setIsUserAdmin(isAdmin))
       .catch(() => setIsUserAdmin(false));
-  }, [session]);
+  }, [accessToken]);
 
   const totalCount = restaurants.length;
   const visitedCount = useMemo(() => restaurants.filter((r) => r.visited).length, [restaurants]);
@@ -117,20 +134,20 @@ function Index() {
 
   // Load lists
   useEffect(() => {
-    if (!session) return;
+    if (!accessToken) return;
     loadLists();
-  }, [session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken]);
 
   const loadLists = async () => {
+    if (!tokenRef.current) return;
     try {
       const { lists: data } = await getUserLists({
-        headers: { Authorization: `Bearer ${session!.access_token}` },
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
       });
-      console.log("[loadLists] raw:", data);
       const mapped = data
         .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
         .filter((l) => !!l.id);
-      console.log("[loadLists] mapped:", mapped);
       setLists(mapped);
       if (mapped.length > 0) {
         setActiveListId((prev) => prev ?? mapped[0].id);
@@ -138,14 +155,14 @@ function Index() {
         // No memberships — create default list
         const { list } = await createList({
           data: { name: "Minha Lista" },
-          headers: { Authorization: `Bearer ${session!.access_token}` },
+          headers: { Authorization: `Bearer ${tokenRef.current}` },
         });
         setLists([{ id: list.id, name: list.name, created_by: list.created_by }]);
         setActiveListId(list.id);
         // Seed default restaurants
         await seedDefaultRestaurants({
           data: { listId: list.id },
-          headers: { Authorization: `Bearer ${session!.access_token}` },
+          headers: { Authorization: `Bearer ${tokenRef.current}` },
         });
       }
     } catch (err) {
@@ -155,17 +172,18 @@ function Index() {
 
   // Load restaurants when active list changes
   useEffect(() => {
-    if (!activeListId || !session) return;
+    if (!activeListId || !accessToken) return;
     loadRestaurants();
-  }, [activeListId, session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeListId, accessToken]);
 
   const loadRestaurants = async () => {
-    if (!activeListId || !session) return;
+    if (!activeListId || !tokenRef.current) return;
     setLoading(true);
     try {
       const { restaurants: data } = await getRestaurants({
         data: { listId: activeListId },
-        headers: { Authorization: `Bearer ${session!.access_token}` },
+        headers: { Authorization: `Bearer ${tokenRef.current}` },
       });
       setRestaurants(data as Restaurant[]);
     } catch (err) {
@@ -175,56 +193,62 @@ function Index() {
     }
   };
 
+  const deferredSearch = useDeferredValue(search);
+
   const filtered = useMemo(() => {
+    const q = deferredSearch.toLowerCase();
     return restaurants
       .filter((r) => {
-        if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
+        if (q && !r.name.toLowerCase().includes(q)) return false;
         if (statusFilter === "visited" && !r.visited) return false;
         if (statusFilter === "to-visit" && r.visited) return false;
         if (cuisineFilter.length > 0 && !cuisineFilter.includes(r.cuisine)) return false;
         return true;
       })
       .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
-  }, [restaurants, search, statusFilter, cuisineFilter]);
+  }, [restaurants, deferredSearch, statusFilter, cuisineFilter]);
 
   const handleToggleVisited = useCallback(async (id: string) => {
-    const r = restaurants.find((r) => r.id === id);
-    if (!r || !session) return;
+    const r = restaurantsRef.current.find((r) => r.id === id);
+    const token = tokenRef.current;
+    if (!r || !token) return;
     setRestaurants((prev) => prev.map((x) => (x.id === id ? { ...x, visited: !x.visited } : x)));
     try {
       await updateRestaurant({
         data: { id, visited: !r.visited },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
       setRestaurants((prev) => prev.map((x) => (x.id === id ? { ...x, visited: r.visited } : x)));
     }
-  }, [restaurants, session]);
+  }, []);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!session) return;
-    const prev = restaurants;
+    const token = tokenRef.current;
+    if (!token) return;
+    const prev = restaurantsRef.current;
     setRestaurants((p) => p.filter((r) => r.id !== id));
     try {
       await deleteRestaurant({
         data: { id },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
       setRestaurants(prev);
     }
-  }, [restaurants, session]);
+  }, []);
 
   const handleRate = useCallback(async (id: string, rating: number) => {
-    if (!session) return;
+    const token = tokenRef.current;
+    if (!token) return;
     setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, rating } : r)));
     try {
       await updateRestaurant({
         data: { id, rating },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {}
-  }, [session]);
+  }, []);
 
   const handleAdd = useCallback(async (data: {
     name: string;
@@ -495,8 +519,8 @@ function Index() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto mx-auto max-w-lg w-full">
-        {tab === "list" ? (
-          <div className="px-4 py-3 space-y-3">
+        {/* List tab — always mounted */}
+        <div className={tab === "list" ? "px-4 py-3 space-y-3" : "hidden"}>
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -587,9 +611,11 @@ function Index() {
                 ))
               )}
             </div>
-          </div>
-        ) : tab === "location" ? (
-          <div className="px-4 py-3 pb-20 space-y-3">
+        </div>
+
+        {/* Map tab — mounted on first visit, kept alive after */}
+        {mountedTabs.location && (
+          <div className={tab === "location" ? "px-4 py-3 pb-20 space-y-3" : "hidden"}>
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={handleGeocodeAll}
@@ -610,8 +636,11 @@ function Index() {
               <LazyMapView restaurants={restaurants} />
             </Suspense>
           </div>
-        ) : (
-          <div className="px-4 py-3 pb-20">
+        )}
+
+        {/* Near-me tab — mounted on first visit, kept alive after */}
+        {mountedTabs.nearme && (
+          <div className={tab === "nearme" ? "px-4 py-3 pb-20" : "hidden"}>
             <NearMeView restaurants={restaurants} onToggleVisited={handleToggleVisited} />
           </div>
         )}
@@ -621,7 +650,7 @@ function Index() {
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto max-w-lg flex">
           <button
-            onClick={() => setTab("list")}
+            onClick={() => switchTab("list")}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               tab === "list" ? "text-primary" : "text-muted-foreground"
             }`}
@@ -630,7 +659,7 @@ function Index() {
             Lista
           </button>
           <button
-            onClick={() => setTab("location")}
+            onClick={() => switchTab("location")}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               tab === "location" ? "text-primary" : "text-muted-foreground"
             }`}
@@ -639,7 +668,7 @@ function Index() {
             Mapa
           </button>
           <button
-            onClick={() => setTab("nearme")}
+            onClick={() => switchTab("nearme")}
             className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
               tab === "nearme" ? "text-primary" : "text-muted-foreground"
             }`}
