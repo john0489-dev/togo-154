@@ -511,8 +511,8 @@ function Index() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto mx-auto max-w-lg w-full">
-        {tab === "list" ? (
-          <div className="px-4 py-3 space-y-3">
+        {/* List tab — always mounted */}
+        <div className={tab === "list" ? "px-4 py-3 space-y-3" : "hidden"}>
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -603,9 +603,11 @@ function Index() {
                 ))
               )}
             </div>
-          </div>
-        ) : tab === "location" ? (
-          <div className="px-4 py-3 pb-20 space-y-3">
+        </div>
+
+        {/* Map tab — mounted on first visit, kept alive after */}
+        {mountedTabs.location && (
+          <div className={tab === "location" ? "px-4 py-3 pb-20 space-y-3" : "hidden"}>
             <div className="flex items-center justify-between gap-2">
               <button
                 onClick={handleGeocodeAll}
@@ -626,8 +628,11 @@ function Index() {
               <LazyMapView restaurants={restaurants} />
             </Suspense>
           </div>
-        ) : (
-          <div className="px-4 py-3 pb-20">
+        )}
+
+        {/* Near-me tab — mounted on first visit, kept alive after */}
+        {mountedTabs.nearme && (
+          <div className={tab === "nearme" ? "px-4 py-3 pb-20" : "hidden"}>
             <NearMeView restaurants={restaurants} onToggleVisited={handleToggleVisited} />
           </div>
         )}
