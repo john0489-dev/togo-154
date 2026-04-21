@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2 } from "lucide-react";
+import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
@@ -20,6 +20,7 @@ import {
   deleteList,
   seedDefaultRestaurants,
   geocodeListRestaurants,
+  isAdmin as isAdminFn,
 } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/")({
@@ -97,6 +98,14 @@ function Index() {
   const [listDropdown, setListDropdown] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!session) return;
+    isAdminFn({ headers: { Authorization: `Bearer ${session.access_token}` } })
+      .then(({ isAdmin }) => setIsUserAdmin(isAdmin))
+      .catch(() => setIsUserAdmin(false));
+  }, [session]);
 
   const totalCount = restaurants.length;
   const visitedCount = useMemo(() => restaurants.filter((r) => r.visited).length, [restaurants]);
@@ -377,6 +386,15 @@ function Index() {
               <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
+              {isUserAdmin && (
+                <Link
+                  to="/admin"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
+                  aria-label="Painel admin"
+                >
+                  <Shield size={16} />
+                </Link>
+              )}
               {activeListId && activeList?.created_by === user?.id && (
                 <button
                   onClick={() => setInviteOpen(true)}

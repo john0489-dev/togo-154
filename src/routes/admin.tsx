@@ -1,0 +1,244 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { ArrowLeft, RefreshCw, Users, Calendar, TrendingUp } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { getAdminSignups, isAdmin as isAdminFn } from "@/lib/api.functions";
+
+export const Route = createFileRoute("/admin")({
+  head: () => ({
+    meta: [
+      { title: "To Go — Painel admin" },
+      { name: "description", content: "Painel administrativo de cadastros." },
+    ],
+  }),
+  component: AdminPage,
+});
+
+type Signup = {
+  id: string;
+  email: string | null;
+  created_at: string;
+};
+
+function AdminPage() {
+  const { isAuthenticated, loading, session } = useAuth();
+  const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
+  const [allowed, setAllowed] = useState(false);
+  const [signups, setSignups] = useState<Signup[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Auth guard
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [loading, isAuthenticated, navigate]);
+
+  // Admin check + initial load
+  useEffect(() => {
+    if (!session) return;
+    (async () => {
+      try {
+        const { isAdmin } = await isAdminFn({
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        setAllowed(isAdmin);
+        if (isAdmin) {
+          const { signups: data } = await getAdminSignups({
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          setSignups(data as Signup[]);
+        }
+      } catch (err: any) {
+        console.error(err);
+        setError(err?.message ?? "Erro ao carregar dados.");
+      } finally {
+        setChecking(false);
+      }
+    })();
+  }, [session]);
+
+  const handleRefresh = useCallback(async () => {
+    if (!session || refreshing) return;
+    setRefreshing(true);
+    try {
+      const { signups: data } = await getAdminSignups({
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      setSignups(data as Signup[]);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message ?? "Erro ao atualizar.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [session, refreshing]);
+
+  const stats = useMemo(() => {
+    const now = Date.now();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const today = signups.filter((s) => now - new Date(s.created_at).getTime() < oneDay).length;
+    const week = signups.filter((s) => now - new Date(s.created_at).getTime() < 7 * oneDay).length;
+    return { total: signups.length, week, today };
+  }, [signups]);
+
+  if (loading || checking) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
+
+  if (!allowed) {
+    return (
+      <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-6 text-center">
+        <h1 className="text-2xl font-bold text-foreground">Acesso negado</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Você não tem permissão para acessar este painel.
+        </p>
+        <Link
+          to="/"
+          search={{ list: undefined }}
+          className="mt-6 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          Voltar
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-[100dvh] bg-background flex flex-col">
+      {/* Header */}
+      <header
+        className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-5 shrink-0"
+        style={{ background: "var(--hero-gradient)" }}
+      >
+        <div className="mx-auto max-w-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <Link
+                to="/"
+                search={{ list: undefined }}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors shrink-0"
+                aria-label="Voltar"
+              >
+                <ArrowLeft size={18} />
+              </Link>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">
+                  Cadastros
+                </h1>
+                <p className="text-xs text-primary-foreground/70">Painel administrativo</p>
+              </div>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors disabled:opacity-50 shrink-0"
+              aria-label="Atualizar"
+            >
+              <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-primary-foreground/15 px-3 py-3 backdrop-blur-sm">
+            <StatCell icon={<Users size={14} />} label="Total" value={stats.total} />
+            <StatCell
+              icon={<TrendingUp size={14} />}
+              label="7 dias"
+              value={stats.week}
+              bordered
+            />
+            <StatCell icon={<Calendar size={14} />} label="Hoje" value={stats.today} />
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 px-5 py-5">
+        <div className="mx-auto max-w-lg">
+          {error && (
+            <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
+          {signups.length === 0 ? (
+            <div className="rounded-xl border border-border bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground">Nenhum cadastro ainda.</p>
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {signups.map((s) => (
+                <SignupRow key={s.id} signup={s} />
+              ))}
+            </ul>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function StatCell({
+  icon,
+  label,
+  value,
+  bordered,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  bordered?: boolean;
+}) {
+  return (
+    <div className={`text-center ${bordered ? "border-x border-primary-foreground/20" : ""}`}>
+      <div className="flex items-center justify-center gap-1 text-primary-foreground/80">
+        {icon}
+        <p className="text-[10px] font-semibold uppercase tracking-widest">{label}</p>
+      </div>
+      <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{value}</p>
+    </div>
+  );
+}
+
+const dateFmt = new Intl.DateTimeFormat("pt-BR", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "agora mesmo";
+  if (minutes < 60) return `há ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `há ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "ontem";
+  if (days < 30) return `há ${days} dias`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `há ${months} ${months === 1 ? "mês" : "meses"}`;
+  const years = Math.floor(months / 12);
+  return `há ${years} ${years === 1 ? "ano" : "anos"}`;
+}
+
+function SignupRow({ signup }: { signup: Signup }) {
+  return (
+    <li className="rounded-xl border border-border bg-card px-4 py-3">
+      <p className="text-sm font-medium text-foreground truncate">
+        {signup.email ?? "(sem e-mail)"}
+      </p>
+      <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span>{dateFmt.format(new Date(signup.created_at))}</span>
+        <span className="shrink-0">{relativeTime(signup.created_at)}</span>
+      </div>
+    </li>
+  );
+}

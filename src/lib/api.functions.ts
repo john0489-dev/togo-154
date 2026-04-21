@@ -466,6 +466,47 @@ export const getListMembers = createServerFn({ method: "POST" })
     return { members: result };
   });
 
+// Check whether the current user is an admin
+export const isAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data, error } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (error) {
+      console.error("[isAdmin]", error);
+      return { isAdmin: false };
+    }
+    return { isAdmin: !!data };
+  });
+
+// Get all user signups (admin only)
+export const getAdminSignups = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+
+    // Verify admin role
+    const { data: hasAdminRole, error: roleErr } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (roleErr) safeError("getAdminSignups:role", roleErr);
+    if (!hasAdminRole) {
+      throw new Error("Acesso negado.");
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, email, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) safeError("getAdminSignups", error);
+    return { signups: data ?? [] };
+  });
+
 // Seed default restaurants into a list
 export const seedDefaultRestaurants = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
