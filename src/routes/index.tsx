@@ -5,6 +5,7 @@ import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
 import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
+import { EditAddressDialog } from "@/components/EditAddressDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,6 +94,7 @@ function Index() {
   const [cuisineDropdownOpen, setCuisineDropdownOpen] = useState(false);
   const cuisineDropdownRef = useRef<HTMLDivElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
   const [newListName, setNewListName] = useState("");
@@ -244,6 +246,46 @@ function Index() {
       console.error("Error adding restaurant:", err);
     }
   }, [activeListId, session]);
+
+  const handleSaveAddress = useCallback(async (data: {
+    id: string;
+    location: string;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  }) => {
+    if (!session) return;
+    setRestaurants((prev) => prev.map((r) =>
+      r.id === data.id
+        ? {
+            ...r,
+            location: data.location,
+            address: data.address ?? r.address,
+            latitude: data.latitude ?? r.latitude,
+            longitude: data.longitude ?? r.longitude,
+          }
+        : r
+    ));
+    try {
+      await updateRestaurant({
+        data: {
+          id: data.id,
+          location: data.location,
+          address: data.address,
+          latitude: data.latitude,
+          longitude: data.longitude,
+        },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+    } catch (err) {
+      console.error("Error updating address:", err);
+      loadRestaurants();
+    }
+  }, [session]);
+
+  const handleEditAddress = useCallback((id: string) => {
+    setEditAddressId(id);
+  }, []);
 
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
@@ -565,6 +607,7 @@ function Index() {
                     onToggleVisited={handleToggleVisited}
                     onDelete={handleDelete}
                     onRate={handleRate}
+                    onEditAddress={handleEditAddress}
                   />
                 ))
               )}
@@ -646,6 +689,15 @@ function Index() {
           onClose={() => setInviteOpen(false)}
           listId={activeListId}
           session={session!}
+        />
+      )}
+      {session && (
+        <EditAddressDialog
+          open={editAddressId !== null}
+          onClose={() => setEditAddressId(null)}
+          session={session}
+          restaurant={restaurants.find((r) => r.id === editAddressId) ?? null}
+          onSave={handleSaveAddress}
         />
       )}
     </div>
