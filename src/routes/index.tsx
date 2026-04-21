@@ -88,6 +88,14 @@ function Index() {
   const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [tab, setTab] = useState<Tab>("list");
+  const [mountedTabs, setMountedTabs] = useState<{ location: boolean; nearme: boolean }>({ location: false, nearme: false });
+
+  const switchTab = useCallback((next: Tab) => {
+    setTab(next);
+    if (next === "location" || next === "nearme") {
+      setMountedTabs((prev) => (prev[next] ? prev : { ...prev, [next]: true }));
+    }
+  }, []);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [cuisineFilter, setCuisineFilter] = useState<string[]>([]);
