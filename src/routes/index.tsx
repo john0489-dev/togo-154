@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2 } from "lucide-react";
+import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
@@ -20,6 +20,7 @@ import {
   deleteList,
   seedDefaultRestaurants,
   geocodeListRestaurants,
+  isAdmin as isAdminFn,
 } from "@/lib/api.functions";
 
 export const Route = createFileRoute("/")({
