@@ -185,56 +185,62 @@ function Index() {
     }
   };
 
+  const deferredSearch = useDeferredValue(search);
+
   const filtered = useMemo(() => {
+    const q = deferredSearch.toLowerCase();
     return restaurants
       .filter((r) => {
-        if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false;
+        if (q && !r.name.toLowerCase().includes(q)) return false;
         if (statusFilter === "visited" && !r.visited) return false;
         if (statusFilter === "to-visit" && r.visited) return false;
         if (cuisineFilter.length > 0 && !cuisineFilter.includes(r.cuisine)) return false;
         return true;
       })
       .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
-  }, [restaurants, search, statusFilter, cuisineFilter]);
+  }, [restaurants, deferredSearch, statusFilter, cuisineFilter]);
 
   const handleToggleVisited = useCallback(async (id: string) => {
-    const r = restaurants.find((r) => r.id === id);
-    if (!r || !session) return;
+    const r = restaurantsRef.current.find((r) => r.id === id);
+    const token = tokenRef.current;
+    if (!r || !token) return;
     setRestaurants((prev) => prev.map((x) => (x.id === id ? { ...x, visited: !x.visited } : x)));
     try {
       await updateRestaurant({
         data: { id, visited: !r.visited },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
       setRestaurants((prev) => prev.map((x) => (x.id === id ? { ...x, visited: r.visited } : x)));
     }
-  }, [restaurants, session]);
+  }, []);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!session) return;
-    const prev = restaurants;
+    const token = tokenRef.current;
+    if (!token) return;
+    const prev = restaurantsRef.current;
     setRestaurants((p) => p.filter((r) => r.id !== id));
     try {
       await deleteRestaurant({
         data: { id },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
       setRestaurants(prev);
     }
-  }, [restaurants, session]);
+  }, []);
 
   const handleRate = useCallback(async (id: string, rating: number) => {
-    if (!session) return;
+    const token = tokenRef.current;
+    if (!token) return;
     setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, rating } : r)));
     try {
       await updateRestaurant({
         data: { id, rating },
-        headers: { Authorization: `Bearer ${session.access_token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {}
-  }, [session]);
+  }, []);
 
   const handleAdd = useCallback(async (data: {
     name: string;
