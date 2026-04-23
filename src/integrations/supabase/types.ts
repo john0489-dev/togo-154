@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_feed: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          list_id: string | null
+          target_id: string | null
+          target_name: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          list_id?: string | null
+          target_id?: string | null
+          target_name?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          list_id?: string | null
+          target_id?: string | null
+          target_name?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_feed_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_feed_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       list_invites: {
         Row: {
           accepted: boolean
@@ -118,27 +199,102 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      notifications: {
         Row: {
+          actor_id: string | null
+          body: string | null
           created_at: string
-          email: string | null
           id: string
-          plan: string
-          pro_expires_at: string | null
+          is_read: boolean
+          target_url: string | null
+          title: string
+          type: string
+          user_id: string
         }
         Insert: {
+          actor_id?: string | null
+          body?: string | null
           created_at?: string
-          email?: string | null
-          id: string
-          plan?: string
-          pro_expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          target_url?: string | null
+          title: string
+          type: string
+          user_id: string
         }
         Update: {
+          actor_id?: string | null
+          body?: string | null
           created_at?: string
-          email?: string | null
           id?: string
+          is_read?: boolean
+          target_url?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          followers_count: number
+          following_count: number
+          id: string
+          is_public: boolean
+          plan: string
+          pro_expires_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          followers_count?: number
+          following_count?: number
+          id: string
+          is_public?: boolean
           plan?: string
           pro_expires_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          followers_count?: number
+          following_count?: number
+          id?: string
+          is_public?: boolean
+          plan?: string
+          pro_expires_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
