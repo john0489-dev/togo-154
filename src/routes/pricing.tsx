@@ -297,8 +297,10 @@ function PricingPage() {
                       <Loader2 size={14} className="animate-spin" />
                       Enviando…
                     </span>
+                  ) : billing === "monthly" ? (
+                    "Assinar Pro — R$ 14,90/mês"
                   ) : (
-                    "Assinar Pro"
+                    "Assinar Pro — R$ 99/ano"
                   )}
                 </button>
                 <p className="text-center text-[11px] text-muted-foreground">
