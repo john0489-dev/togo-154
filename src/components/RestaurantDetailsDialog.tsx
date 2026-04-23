@@ -54,7 +54,7 @@ export function RestaurantDetailsDialog({
     (async () => {
       const { data } = await supabase.rpc("get_user_email_for_list_member", {
         _user_id: restaurant.added_by!,
-        _list_id: restaurant.list_id,
+        _list_id: restaurant.list_id!,
       });
       if (!cancelled) setAddedByEmail((data as string | null) ?? null);
     })();
