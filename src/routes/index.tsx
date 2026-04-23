@@ -441,7 +441,7 @@ function Index() {
               <div className="flex items-center gap-2 min-w-0">
                 <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
                 <Link
-                  to="/pro"
+                  to="/pricing"
                   className={`shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
                     plan === "pro"
                       ? "bg-amber-300 text-amber-900 active:bg-amber-200"
