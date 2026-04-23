@@ -47,6 +47,8 @@ export const Route = createRootRoute({
       { property: "og:image", content: "/icon-512.png" },
     ],
     links: [
+      { rel: "preconnect", href: "https://rfsvfqynjoiglvornrvp.supabase.co", crossOrigin: "anonymous" },
+      { rel: "dns-prefetch", href: "https://rfsvfqynjoiglvornrvp.supabase.co" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
