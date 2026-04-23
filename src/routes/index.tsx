@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect, useRef, useDeferredValue } from "react";
-import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield } from "lucide-react";
+import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield, Sparkles } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
 import { RestaurantCard } from "@/components/RestaurantCard";
@@ -8,7 +8,10 @@ import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
+import { useUpgradeModal } from "@/hooks/useUpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
+
+import { ProLockBadge } from "@/components/ProLockBadge";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 import {
@@ -84,6 +87,7 @@ function IndexWrapper() {
 function Index() {
   const { user, session } = useAuth();
   const { plan, usage, limits, refresh: refreshPlan } = usePlan();
+  const { open: openUpgrade } = useUpgradeModal();
   const navigate = useNavigate();
   const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
@@ -264,7 +268,7 @@ function Index() {
     if (!activeListId || !session) return;
     // Client-side guard (server enforces too)
     if (plan === "free" && limits.restaurants !== null && usage.restaurants >= limits.restaurants) {
-      window.alert(`Você atingiu o limite do plano Free (${limits.restaurants} restaurantes). Faça upgrade para Pro para adicionar mais.`);
+      openUpgrade({ reason: "restaurants" });
       return;
     }
     try {
@@ -284,9 +288,14 @@ function Index() {
       refreshPlan();
     } catch (err: any) {
       console.error("Error adding restaurant:", err);
-      window.alert(err?.message ?? "Erro ao adicionar restaurante.");
+      // Server-side limit hit (race condition) — show modal
+      if (typeof err?.message === "string" && err.message.toLowerCase().includes("limite")) {
+        openUpgrade({ reason: "restaurants" });
+      } else {
+        window.alert(err?.message ?? "Erro ao adicionar restaurante.");
+      }
     }
-  }, [activeListId, session, plan, limits.restaurants, usage.restaurants, refreshPlan]);
+  }, [activeListId, session, plan, limits.restaurants, usage.restaurants, refreshPlan, openUpgrade]);
 
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
@@ -364,7 +373,8 @@ function Index() {
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
     if (plan === "free" && limits.lists !== null && usage.lists >= limits.lists) {
-      window.alert(`Você atingiu o limite do plano Free (${limits.lists} listas). Faça upgrade para Pro para criar mais.`);
+      setListDropdown(false);
+      openUpgrade({ reason: "lists" });
       return;
     }
     try {
@@ -380,7 +390,12 @@ function Index() {
       refreshPlan();
     } catch (err: any) {
       console.error("Error creating list:", err);
-      window.alert(err?.message ?? "Erro ao criar lista.");
+      if (typeof err?.message === "string" && err.message.toLowerCase().includes("limite")) {
+        setListDropdown(false);
+        openUpgrade({ reason: "lists" });
+      } else {
+        window.alert(err?.message ?? "Erro ao criar lista.");
+      }
     }
   };
 
@@ -425,11 +440,12 @@ function Index() {
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
               <div className="flex items-center gap-2 min-w-0">
                 <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
-                <span
-                  className={`shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                <Link
+                  to="/pro"
+                  className={`shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
                     plan === "pro"
-                      ? "bg-amber-300 text-amber-900"
-                      : "bg-primary-foreground/20 text-primary-foreground"
+                      ? "bg-amber-300 text-amber-900 active:bg-amber-200"
+                      : "bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30"
                   }`}
                   title={
                     plan === "free" && limits.restaurants !== null
@@ -437,8 +453,9 @@ function Index() {
                       : "Plano Pro"
                   }
                 >
+                  {plan === "pro" && <Sparkles size={9} fill="currentColor" />}
                   {plan === "pro" ? "Pro" : "Free"}
-                </span>
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
@@ -625,6 +642,14 @@ function Index() {
                 )}
               </div>
             </div>
+
+            {plan === "free" && (
+              <div className="flex flex-wrap gap-2">
+                <ProLockBadge variant="button" featureName="Filtros avançados" />
+                <ProLockBadge variant="button" featureName="Exportar PDF" />
+                <ProLockBadge variant="button" featureName="Tags" />
+              </div>
+            )}
 
             <div className="space-y-2.5 pb-20">
               {loading ? (

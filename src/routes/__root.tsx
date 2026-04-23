@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PlanProvider } from "@/hooks/usePlan";
+import { UpgradeModalProvider } from "@/hooks/useUpgradeModal";
 
 
 import appCss from "../styles.css?url";
@@ -74,7 +75,9 @@ function RootComponent() {
   return (
     <AuthProvider>
       <PlanProvider>
-        <Outlet />
+        <UpgradeModalProvider>
+          <Outlet />
+        </UpgradeModalProvider>
       </PlanProvider>
     </AuthProvider>
   );
