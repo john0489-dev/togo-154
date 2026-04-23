@@ -15,48 +15,78 @@ function RefundPage() {
   return (
     <Layout title="Política de Reembolso" updated="23 de abril de 2026">
       <p>
-        Esta política descreve as condições para reembolso da assinatura
-        <strong> To Go Pro</strong>.
+        Esta política descreve as condições para reembolso da assinatura{" "}
+        <strong>To Go Pro</strong>, produto operado por{" "}
+        <strong>John Charles Long</strong>.
       </p>
 
-      <h2>1. Direito de arrependimento (CDC)</h2>
+      <h2>1. Garantia de devolução do dinheiro — 30 dias</h2>
       <p>
-        Conforme o art. 49 do Código de Defesa do Consumidor, você pode solicitar o
-        reembolso integral em até <strong>7 dias corridos</strong> após a contratação
-        inicial da assinatura, sem necessidade de justificativa.
+        Oferecemos uma <strong>garantia de devolução do dinheiro de 30 dias</strong>.
+        Se você não estiver satisfeito com sua compra, pode solicitar reembolso
+        integral em até 30 dias corridos a partir da data do pedido, sem
+        necessidade de justificativa. Esse prazo cobre — e amplia — o direito de
+        arrependimento previsto no art. 49 do Código de Defesa do Consumidor
+        (CDC) brasileiro.
       </p>
 
-      <h2>2. Reembolso após o prazo de arrependimento</h2>
+      <h2>2. Como solicitar o reembolso</h2>
       <p>
-        Após os 7 dias, a assinatura não é reembolsável proporcionalmente, mas você
-        pode cancelar a renovação a qualquer momento e continuar usando o Pro até o
-        fim do período já pago. Não haverá cobranças futuras.
+        Os reembolsos são processados pelo nosso provedor de pagamento e
+        Merchant of Record, a <strong>Paddle</strong>. Para solicitar:
+      </p>
+      <p>
+        1. Acesse{" "}
+        <a href="https://paddle.net" target="_blank" rel="noopener noreferrer">
+          paddle.net
+        </a>{" "}
+        com o e-mail usado na compra para localizar sua transação e abrir um
+        pedido de reembolso; ou<br />
+        2. Escreva para o e-mail de suporte do To Go com o assunto "Reembolso To
+        Go Pro", informando o e-mail da conta e a data da compra. Encaminharemos
+        sua solicitação à Paddle.
       </p>
 
-      <h2>3. Como solicitar o reembolso</h2>
+      <h2>3. Reembolsos fora da janela de 30 dias</h2>
       <p>
-        Envie um e-mail para o suporte com o assunto "Reembolso To Go Pro", informando
-        o e-mail da conta e a data da compra. Responderemos em até 5 dias úteis.
+        Solicitações fora da janela de 30 dias podem ainda ser avaliadas pela
+        Paddle, caso a caso, conforme a{" "}
+        <a
+          href="https://www.paddle.com/legal/refund-policy"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Política de Reembolso da Paddle
+        </a>
+        . Recomendamos abrir o pedido em{" "}
+        <a href="https://paddle.net" target="_blank" rel="noopener noreferrer">
+          paddle.net
+        </a>{" "}
+        descrevendo a situação.
       </p>
 
-      <h2>4. Forma de devolução</h2>
+      <h2>4. Cancelamento sem reembolso</h2>
       <p>
-        O reembolso é processado pelo Paddle no mesmo meio de pagamento usado na
+        Você pode cancelar a renovação a qualquer momento e continuar usando o
+        Pro até o fim do período já pago. Após esse prazo, sua conta volta
+        automaticamente para o plano Free e nenhuma cobrança futura será feita.
+      </p>
+
+      <h2>5. Forma de devolução</h2>
+      <p>
+        O reembolso é processado pela Paddle no mesmo meio de pagamento usado na
         compra. Pode levar de 5 a 10 dias úteis para aparecer na sua fatura,
         dependendo do banco emissor.
       </p>
 
-      <h2>5. Casos não elegíveis</h2>
-      <p>
-        Não há reembolso para renovações automáticas após o primeiro ciclo, exceto
-        nos casos previstos em lei. Recomendamos cancelar a renovação antes do
-        próximo ciclo se não pretende continuar.
-      </p>
-
       <h2>6. Contato</h2>
       <p>
-        Em caso de dúvidas sobre cobranças, escreva para o e-mail de suporte. Veja
-        também os <Link to="/terms">Termos de Uso</Link> e a{" "}
+        Para qualquer dúvida, escreva para o e-mail de suporte do To Go ou contate
+        diretamente a Paddle em{" "}
+        <a href="https://paddle.net" target="_blank" rel="noopener noreferrer">
+          paddle.net
+        </a>
+        . Veja também os <Link to="/terms">Termos de Uso</Link> e a{" "}
         <Link to="/privacy">Política de Privacidade</Link>.
       </p>
     </Layout>
@@ -80,7 +110,8 @@ function Layout({
       >
         <div className="mx-auto max-w-2xl">
           <Link
-            to="/pricing"
+            to="/"
+            search={{ list: undefined }}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground"
             aria-label="Voltar"
           >
