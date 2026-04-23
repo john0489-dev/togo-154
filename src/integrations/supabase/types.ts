@@ -451,6 +451,23 @@ export type Database = {
     Functions: {
       can_add_restaurant: { Args: { _user_id: string }; Returns: boolean }
       count_user_restaurants: { Args: { _user_id: string }; Returns: number }
+      get_all_signups_admin: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          id: string
+        }[]
+      }
+      get_list_member_emails: {
+        Args: { _list_id: string }
+        Returns: {
+          email: string
+          joined_at: string
+          role: Database["public"]["Enums"]["list_role"]
+          user_id: string
+        }[]
+      }
       get_list_role: {
         Args: { _list_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["list_role"]
@@ -470,6 +487,10 @@ export type Database = {
           plan: string
           username: string
         }[]
+      }
+      get_user_email_for_list_member: {
+        Args: { _list_id: string; _user_id: string }
+        Returns: string
       }
       get_user_plan: { Args: { _user_id: string }; Returns: string }
       has_active_subscription: {
