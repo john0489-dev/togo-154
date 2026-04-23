@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { AppLogo } from "@/components/AppLogo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -80,12 +81,10 @@ function LoginPage() {
               borderRadius: 20,
               background: "#f5f0e8",
               border: "1px solid rgba(0,0,0,0.06)",
-              fontSize: 34,
-              lineHeight: 1,
             }}
             aria-hidden
           >
-            🍽
+            <AppLogo size={44} />
           </div>
 
           <h1
