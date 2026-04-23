@@ -36,6 +36,14 @@ export const Route = createFileRoute("/")({
       { title: "To Go — Sua lista pessoal de restaurantes" },
       { name: "description", content: "Gerencie sua lista pessoal de restaurantes e bares para visitar." },
     ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap",
+      },
+    ],
   }),
   component: IndexWrapper,
 });
