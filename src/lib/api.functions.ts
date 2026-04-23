@@ -35,6 +35,18 @@ export const createList = createServerFn({ method: "POST" })
   .inputValidator(z.object({ name: z.string().min(1).max(100) }))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    // Plan enforcement
+    const plan = await fetchUserPlan(supabase, userId);
+    if (plan === "free") {
+      const used = await countUserOwnedLists(supabase, userId);
+      if (used >= FREE_LIST_LIMIT) {
+        throw new Error(
+          `Limite do plano Free atingido (${FREE_LIST_LIMIT} listas). Faça upgrade para Pro para criar mais.`
+        );
+      }
+    }
+
     const { data: list, error } = await supabase
       .from("lists")
       .insert({ name: data.name, created_by: userId })
