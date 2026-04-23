@@ -422,7 +422,23 @@ function Index() {
           <div className="flex items-center justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
-              <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
+              <div className="flex items-center gap-2 min-w-0">
+                <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
+                <span
+                  className={`shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                    plan === "pro"
+                      ? "bg-amber-300 text-amber-900"
+                      : "bg-primary-foreground/20 text-primary-foreground"
+                  }`}
+                  title={
+                    plan === "free" && limits.restaurants !== null
+                      ? `${usage.restaurants}/${limits.restaurants} restaurantes · ${usage.lists}/${limits.lists} listas`
+                      : "Plano Pro"
+                  }
+                >
+                  {plan === "pro" ? "Pro" : "Free"}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {isUserAdmin && (
