@@ -48,7 +48,7 @@ function ProPage() {
       >
         <div className="mx-auto max-w-lg">
           <button
-            onClick={() => navigate({ to: "/" })}
+            onClick={() => navigate({ to: "/", search: { list: undefined } })}
             className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
             aria-label="Voltar"
           >
@@ -171,6 +171,7 @@ function ProPage() {
 
         <Link
           to="/"
+          search={{ list: undefined }}
           className="block text-center text-sm text-muted-foreground active:text-foreground py-2"
         >
           Voltar ao app
