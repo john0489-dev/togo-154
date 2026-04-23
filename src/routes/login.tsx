@@ -9,6 +9,14 @@ export const Route = createFileRoute("/login")({
       { title: "To Go — Entrar" },
       { name: "description", content: "Faça login na sua conta To Go." },
     ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap",
+      },
+    ],
   }),
   component: LoginPage,
 });
@@ -56,87 +64,224 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">To Go</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isSignUp ? "Crie sua conta" : "Entre na sua conta"}
-          </p>
+    <div
+      className="flex min-h-screen flex-col"
+      style={{ background: "#ffffff", padding: "0 28px" }}
+    >
+      {/* Topo */}
+      <div className="flex flex-1 flex-col items-center justify-center pt-16 pb-8">
+        <div
+          className="flex items-center justify-center"
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 20,
+            background: "#f5f0e8",
+            border: "1px solid rgba(0,0,0,0.06)",
+            fontSize: 34,
+            lineHeight: 1,
+          }}
+          aria-hidden
+        >
+          🍽
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <h1
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontSize: 32,
+            fontWeight: 400,
+            color: "#1a1a18",
+            letterSpacing: "-0.02em",
+            marginTop: 20,
+            lineHeight: 1.1,
+          }}
+        >
+          To Go
+        </h1>
+
+        <div
+          className="flex items-center"
+          style={{
+            marginTop: 12,
+            fontSize: 12,
+            color: "#999",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            gap: 10,
+          }}
+        >
+          <span>Salve</span>
+          <span
+            aria-hidden
+            style={{
+              width: 3,
+              height: 3,
+              borderRadius: "50%",
+              background: "#d4a855",
+              display: "inline-block",
+            }}
+          />
+          <span>Explore</span>
+          <span
+            aria-hidden
+            style={{
+              width: 3,
+              height: 3,
+              borderRadius: "50%",
+              background: "#d4a855",
+              display: "inline-block",
+            }}
+          />
+          <span>Visite</span>
+        </div>
+      </div>
+
+      {/* Formulário */}
+      <div className="pb-10">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
-            <div className="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div
+              style={{
+                borderRadius: 14,
+                background: "rgba(220, 38, 38, 0.08)",
+                color: "#b91c1c",
+                fontSize: 13,
+                padding: "10px 14px",
+              }}
+            >
               {error}
             </div>
           )}
           {message && (
-            <div className="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
+            <div
+              style={{
+                borderRadius: 14,
+                background: "rgba(212, 168, 85, 0.12)",
+                color: "#8a6a2c",
+                fontSize: 13,
+                padding: "10px 14px",
+              }}
+            >
               {message}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              required
-              className="w-full rounded-lg border border-input bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            autoComplete="email"
+            className="login-field"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Senha</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              minLength={6}
-              className="w-full rounded-lg border border-input bg-card px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Senha"
+            required
+            minLength={6}
+            autoComplete={isSignUp ? "new-password" : "current-password"}
+            className="login-field"
+          />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+            style={{
+              width: "100%",
+              height: 52,
+              border: "none",
+              borderRadius: 14,
+              background: "linear-gradient(135deg, #d4a855 0%, #c4944a 100%)",
+              color: "#ffffff",
+              fontSize: 15,
+              fontWeight: 500,
+              marginTop: 4,
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.7 : 1,
+              transition: "opacity 0.15s ease, transform 0.05s ease",
+            }}
           >
             {loading ? "Carregando..." : isSignUp ? "Criar conta" : "Entrar"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p
+          style={{
+            marginTop: 20,
+            textAlign: "center",
+            fontSize: 13,
+            color: "#aaa",
+          }}
+        >
           {isSignUp ? "Já tem conta?" : "Não tem conta?"}{" "}
           <button
-            onClick={() => { setIsSignUp(!isSignUp); setError(""); setMessage(""); }}
-            className="text-primary font-medium hover:underline"
+            type="button"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError("");
+              setMessage("");
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "#c4944a",
+              fontWeight: 500,
+              fontSize: 13,
+              cursor: "pointer",
+            }}
           >
             {isSignUp ? "Entrar" : "Criar conta"}
           </button>
         </p>
 
-        <p className="mt-8 text-center text-xs text-muted-foreground">
+        <p
+          style={{
+            marginTop: 24,
+            textAlign: "center",
+            fontSize: 11,
+            color: "#ccc",
+            lineHeight: 1.6,
+          }}
+        >
           Ao continuar, você concorda com os{" "}
-          <Link to="/terms" className="text-primary hover:underline">
-            Termos de Uso
+          <Link to="/terms" style={{ color: "#bbb", textDecoration: "underline" }}>
+            Termos
           </Link>{" "}
-          e a{" "}
-          <Link to="/privacy" className="text-primary hover:underline">
-            Política de Privacidade
-          </Link>
-          . Veja também a{" "}
-          <Link to="/refund" className="text-primary hover:underline">
-            Política de Reembolso
+          e{" "}
+          <Link to="/privacy" style={{ color: "#bbb", textDecoration: "underline" }}>
+            Privacidade
           </Link>
           .
         </p>
       </div>
+
+      <style>{`
+        .login-field {
+          width: 100%;
+          height: 50px;
+          border: 1.5px solid #f0ede8;
+          border-radius: 14px;
+          background: #faf9f7;
+          padding: 0 16px;
+          font-size: 14px;
+          color: #1a1a18;
+          outline: none;
+          transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .login-field::placeholder {
+          color: #b5b0a8;
+        }
+        .login-field:focus {
+          border-color: #d4a855;
+          background: #ffffff;
+        }
+      `}</style>
     </div>
   );
 }
