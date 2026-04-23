@@ -96,7 +96,7 @@ export function UpgradeModal({ open, onClose, reason = "feature", featureName }:
             <button
               onClick={() => {
                 onClose();
-                navigate({ to: "/pro" });
+                navigate({ to: "/pricing" });
               }}
               className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform"
               style={{ background: "var(--hero-gradient)" }}
