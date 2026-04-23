@@ -204,7 +204,7 @@ function LoginPage() {
               height: 52,
               border: "none",
               borderRadius: 14,
-              background: "linear-gradient(135deg, #d4a855 0%, #c4944a 100%)",
+              background: "linear-gradient(135deg, #e8b547 0%, #c98a2b 100%)",
               color: "#ffffff",
               fontSize: 15,
               fontWeight: 500,
