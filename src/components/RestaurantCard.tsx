@@ -27,7 +27,8 @@ function RestaurantCardImpl({ restaurant, onToggleVisited, onDelete, onRate }: R
             setOpen(true);
           }
         }}
-        className="rounded-xl border border-border bg-card p-4 shadow-sm cursor-pointer hover:border-primary/30 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+        className="rounded-[14px] p-4 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-ring"
+        style={{ background: "#fff", border: "1px solid #ede9e3" }}
       >
         <div className="flex items-start justify-between">
           <div>
