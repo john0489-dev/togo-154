@@ -123,16 +123,22 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          plan: string
+          pro_expires_at: string | null
         }
         Insert: {
           created_at?: string
           email?: string | null
           id: string
+          plan?: string
+          pro_expires_at?: string | null
         }
         Update: {
           created_at?: string
           email?: string | null
           id?: string
+          plan?: string
+          pro_expires_at?: string | null
         }
         Relationships: []
       }
@@ -148,9 +154,15 @@ export type Database = {
           location: string
           longitude: number | null
           name: string
+          notes: string | null
+          occasion: string | null
+          photo_url: string | null
+          price_range: string | null
           rating: number
+          tags: string[]
           updated_at: string
           visited: boolean
+          visited_at: string | null
         }
         Insert: {
           added_by?: string | null
@@ -163,9 +175,15 @@ export type Database = {
           location?: string
           longitude?: number | null
           name: string
+          notes?: string | null
+          occasion?: string | null
+          photo_url?: string | null
+          price_range?: string | null
           rating?: number
+          tags?: string[]
           updated_at?: string
           visited?: boolean
+          visited_at?: string | null
         }
         Update: {
           added_by?: string | null
@@ -178,9 +196,15 @@ export type Database = {
           location?: string
           longitude?: number | null
           name?: string
+          notes?: string | null
+          occasion?: string | null
+          photo_url?: string | null
+          price_range?: string | null
           rating?: number
+          tags?: string[]
           updated_at?: string
           visited?: boolean
+          visited_at?: string | null
         }
         Relationships: [
           {
@@ -222,6 +246,7 @@ export type Database = {
         Args: { _list_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["list_role"]
       }
+      get_user_plan: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -7,6 +7,7 @@ import { RestaurantCard } from "@/components/RestaurantCard";
 import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlan } from "@/hooks/usePlan";
 import { supabase } from "@/integrations/supabase/client";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
@@ -82,6 +83,7 @@ function IndexWrapper() {
 
 function Index() {
   const { user, session } = useAuth();
+  const { plan, usage, limits, refresh: refreshPlan } = usePlan();
   const navigate = useNavigate();
   const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
@@ -233,10 +235,11 @@ function Index() {
         data: { id },
         headers: { Authorization: `Bearer ${token}` },
       });
+      refreshPlan();
     } catch {
       setRestaurants(prev);
     }
-  }, []);
+  }, [refreshPlan]);
 
   const handleRate = useCallback(async (id: string, rating: number) => {
     const token = tokenRef.current;
@@ -259,6 +262,11 @@ function Index() {
     longitude?: number;
   }) => {
     if (!activeListId || !session) return;
+    // Client-side guard (server enforces too)
+    if (plan === "free" && limits.restaurants !== null && usage.restaurants >= limits.restaurants) {
+      window.alert(`Você atingiu o limite do plano Free (${limits.restaurants} restaurantes). Faça upgrade para Pro para adicionar mais.`);
+      return;
+    }
     try {
       await addRestaurant({
         data: {
@@ -273,10 +281,12 @@ function Index() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       loadRestaurants();
-    } catch (err) {
+      refreshPlan();
+    } catch (err: any) {
       console.error("Error adding restaurant:", err);
+      window.alert(err?.message ?? "Erro ao adicionar restaurante.");
     }
-  }, [activeListId, session]);
+  }, [activeListId, session, plan, limits.restaurants, usage.restaurants, refreshPlan]);
 
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
@@ -353,6 +363,10 @@ function Index() {
 
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
+    if (plan === "free" && limits.lists !== null && usage.lists >= limits.lists) {
+      window.alert(`Você atingiu o limite do plano Free (${limits.lists} listas). Faça upgrade para Pro para criar mais.`);
+      return;
+    }
     try {
       const { list } = await createList({
         data: { name: newListName.trim() },
@@ -363,8 +377,10 @@ function Index() {
       autoGeocodeStartedRef.current = null;
       setNewListName("");
       setListDropdown(false);
-    } catch (err) {
+      refreshPlan();
+    } catch (err: any) {
       console.error("Error creating list:", err);
+      window.alert(err?.message ?? "Erro ao criar lista.");
     }
   };
 
@@ -407,7 +423,23 @@ function Index() {
           <div className="flex items-center justify-between">
             <div className="min-w-0">
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
-              <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
+              <div className="flex items-center gap-2 min-w-0">
+                <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
+                <span
+                  className={`shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                    plan === "pro"
+                      ? "bg-amber-300 text-amber-900"
+                      : "bg-primary-foreground/20 text-primary-foreground"
+                  }`}
+                  title={
+                    plan === "free" && limits.restaurants !== null
+                      ? `${usage.restaurants}/${limits.restaurants} restaurantes · ${usage.lists}/${limits.lists} listas`
+                      : "Plano Pro"
+                  }
+                >
+                  {plan === "pro" ? "Pro" : "Free"}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {isUserAdmin && (

@@ -35,6 +35,18 @@ export const createList = createServerFn({ method: "POST" })
   .inputValidator(z.object({ name: z.string().min(1).max(100) }))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    // Plan enforcement
+    const plan = await fetchUserPlan(supabase, userId);
+    if (plan === "free") {
+      const used = await countUserOwnedLists(supabase, userId);
+      if (used >= FREE_LIST_LIMIT) {
+        throw new Error(
+          `Limite do plano Free atingido (${FREE_LIST_LIMIT} listas). Faça upgrade para Pro para criar mais.`
+        );
+      }
+    }
+
     const { data: list, error } = await supabase
       .from("lists")
       .insert({ name: data.name, created_by: userId })
@@ -76,6 +88,71 @@ export const getRestaurants = createServerFn({ method: "POST" })
     return { restaurants: restaurants ?? [] };
   });
 
+// Plan limits (kept in sync with src/lib/plan.ts)
+const FREE_RESTAURANT_LIMIT = 20;
+const FREE_LIST_LIMIT = 3;
+
+async function fetchUserPlan(supabase: any, userId: string): Promise<"free" | "pro"> {
+  const { data, error } = await supabase.rpc("get_user_plan", { _user_id: userId });
+  if (error) {
+    console.error("[fetchUserPlan]", error);
+    return "free";
+  }
+  return data === "pro" ? "pro" : "free";
+}
+
+async function countUserRestaurants(supabase: any, userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from("restaurants")
+    .select("*", { count: "exact", head: true })
+    .eq("added_by", userId);
+  if (error) {
+    console.error("[countUserRestaurants]", error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+async function countUserOwnedLists(supabase: any, userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from("lists")
+    .select("*", { count: "exact", head: true })
+    .eq("created_by", userId);
+  if (error) {
+    console.error("[countUserOwnedLists]", error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+// Get current user's plan + usage stats
+export const getCurrentPlan = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const plan = await fetchUserPlan(supabase, userId);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan, pro_expires_at")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const [restaurantCount, listCount] = await Promise.all([
+      countUserRestaurants(supabase, userId),
+      countUserOwnedLists(supabase, userId),
+    ]);
+
+    return {
+      plan,
+      proExpiresAt: profile?.pro_expires_at ?? null,
+      usage: { restaurants: restaurantCount, lists: listCount },
+      limits: {
+        restaurants: plan === "pro" ? null : FREE_RESTAURANT_LIMIT,
+        lists: plan === "pro" ? null : FREE_LIST_LIMIT,
+      },
+    };
+  });
+
 // Add a restaurant
 export const addRestaurant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -90,24 +167,54 @@ export const addRestaurant = createServerFn({ method: "POST" })
       address: z.string().max(300).optional(),
       latitude: z.number().optional(),
       longitude: z.number().optional(),
+      notes: z.string().max(2000).optional(),
+      photo_url: z.string().url().max(1000).optional(),
+      tags: z.array(z.string().max(40)).max(20).optional(),
+      price_range: z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
+      occasion: z.string().max(100).optional(),
+      visited_at: z.string().datetime().optional(),
     })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+
+    // Plan enforcement
+    const plan = await fetchUserPlan(supabase, userId);
+    if (plan === "free") {
+      const used = await countUserRestaurants(supabase, userId);
+      if (used >= FREE_RESTAURANT_LIMIT) {
+        throw new Error(
+          `Limite do plano Free atingido (${FREE_RESTAURANT_LIMIT} restaurantes). Faça upgrade para Pro para adicionar mais.`
+        );
+      }
+    }
+
+    const insert: Record<string, any> = {
+      list_id: data.listId,
+      name: data.name,
+      location: data.location,
+      cuisine: data.cuisine,
+      visited: data.visited ?? false,
+      rating: data.rating ?? 0,
+      address: data.address ?? null,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
+      added_by: userId,
+    };
+
+    // Pro-only fields: silently dropped for free users
+    if (plan === "pro") {
+      if (data.notes !== undefined) insert.notes = data.notes;
+      if (data.photo_url !== undefined) insert.photo_url = data.photo_url;
+      if (data.tags !== undefined) insert.tags = data.tags;
+      if (data.price_range !== undefined) insert.price_range = data.price_range;
+      if (data.occasion !== undefined) insert.occasion = data.occasion;
+      if (data.visited_at !== undefined) insert.visited_at = data.visited_at;
+    }
+
     const { data: restaurant, error } = await supabase
       .from("restaurants")
-      .insert({
-        list_id: data.listId,
-        name: data.name,
-        location: data.location,
-        cuisine: data.cuisine,
-        visited: data.visited ?? false,
-        rating: data.rating ?? 0,
-        address: data.address ?? null,
-        latitude: data.latitude ?? null,
-        longitude: data.longitude ?? null,
-        added_by: userId,
-      })
+      .insert(insert as any)
       .select()
       .single();
 
