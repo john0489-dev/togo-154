@@ -8,6 +8,7 @@ import { AddRestaurantDialog } from "@/components/AddRestaurantDialog";
 import { InviteDialog } from "@/components/InviteDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
+import { useUpgradeModal } from "@/hooks/useUpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
@@ -84,6 +85,7 @@ function IndexWrapper() {
 function Index() {
   const { user, session } = useAuth();
   const { plan, usage, limits, refresh: refreshPlan } = usePlan();
+  const { open: openUpgrade } = useUpgradeModal();
   const navigate = useNavigate();
   const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
