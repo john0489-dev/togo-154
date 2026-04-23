@@ -120,6 +120,22 @@ function LoginPage() {
             {isSignUp ? "Entrar" : "Criar conta"}
           </button>
         </p>
+
+        <p className="mt-8 text-center text-xs text-muted-foreground">
+          Ao continuar, você concorda com os{" "}
+          <Link to="/terms" className="text-primary hover:underline">
+            Termos de Uso
+          </Link>{" "}
+          e a{" "}
+          <Link to="/privacy" className="text-primary hover:underline">
+            Política de Privacidade
+          </Link>
+          . Veja também a{" "}
+          <Link to="/refund" className="text-primary hover:underline">
+            Política de Reembolso
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );
