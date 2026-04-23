@@ -218,7 +218,15 @@ export const addRestaurant = createServerFn({ method: "POST" })
       .select()
       .single();
 
-    if (error) safeError("addRestaurant", error);
+    if (error) {
+      // RLS policy violation = plan limit hit at the DB level (defense in depth)
+      if (error.code === "42501" || /row-level security/i.test(error.message ?? "")) {
+        throw new Error(
+          `Limite do plano Free atingido (${FREE_RESTAURANT_LIMIT} restaurantes). Faça upgrade para Pro para adicionar mais.`
+        );
+      }
+      safeError("addRestaurant", error);
+    }
     return { restaurant };
   });
 
