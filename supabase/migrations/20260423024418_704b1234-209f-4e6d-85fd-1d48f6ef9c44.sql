@@ -1,0 +1,4 @@
+UPDATE public.profiles
+SET plan = 'pro',
+    pro_expires_at = NULL
+WHERE email = 'john0489@gmail.com';
