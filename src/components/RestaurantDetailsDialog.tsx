@@ -21,6 +21,7 @@ export type RestaurantDetails = {
   address?: string | null;
   added_by?: string | null;
   created_at?: string;
+  list_id?: string | null;
 };
 
 interface Props {
@@ -45,23 +46,22 @@ export function RestaurantDetailsDialog({
   const [addedByEmail, setAddedByEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open || !restaurant.added_by) {
+    if (!open || !restaurant.added_by || !restaurant.list_id) {
       setAddedByEmail(null);
       return;
     }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("id", restaurant.added_by!)
-        .maybeSingle();
-      if (!cancelled) setAddedByEmail(data?.email ?? null);
+      const { data } = await supabase.rpc("get_user_email_for_list_member", {
+        _user_id: restaurant.added_by!,
+        _list_id: restaurant.list_id!,
+      });
+      if (!cancelled) setAddedByEmail((data as string | null) ?? null);
     })();
     return () => {
       cancelled = true;
     };
-  }, [open, restaurant.added_by]);
+  }, [open, restaurant.added_by, restaurant.list_id]);
 
   const mapsUrl =
     restaurant.latitude != null && restaurant.longitude != null

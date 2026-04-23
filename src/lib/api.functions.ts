@@ -564,11 +564,10 @@ export const getListMembers = createServerFn({ method: "POST" })
   .inputValidator(z.object({ listId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const { data: members, error } = await supabase
-      .from("list_members")
-      .select("user_id, role, joined_at, profiles!list_members_user_id_profiles_fkey(email)")
-      .eq("list_id", data.listId)
-      .order("joined_at", { ascending: true });
+    // Use security-definer RPC so emails are only returned to actual list members.
+    const { data: members, error } = await supabase.rpc("get_list_member_emails", {
+      _list_id: data.listId,
+    });
 
     if (error) safeError("getListMembers", error);
 
@@ -576,7 +575,7 @@ export const getListMembers = createServerFn({ method: "POST" })
       user_id: m.user_id,
       role: m.role,
       joined_at: m.joined_at,
-      email: m.profiles?.email ?? null,
+      email: m.email ?? null,
     }));
     return { members: result };
   });
@@ -613,10 +612,8 @@ export const getAdminSignups = createServerFn({ method: "GET" })
       throw new Error("Acesso negado.");
     }
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, email, created_at")
-      .order("created_at", { ascending: false });
+    // RPC enforces admin role server-side and is the only way to read all emails.
+    const { data, error } = await supabase.rpc("get_all_signups_admin");
 
     if (error) safeError("getAdminSignups", error);
     return { signups: data ?? [] };
