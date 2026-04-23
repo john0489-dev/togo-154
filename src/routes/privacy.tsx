@@ -15,67 +15,134 @@ function PrivacyPage() {
   return (
     <Layout title="Política de Privacidade" updated="23 de abril de 2026">
       <p>
-        Esta política descreve como o <strong>To Go</strong> coleta, usa e protege seus
-        dados pessoais, em conformidade com a LGPD (Lei 13.709/2018).
+        Esta Política de Privacidade descreve como <strong>John Charles Long</strong>
+        {" "}(operando o produto <strong>To Go</strong>; doravante "nós", "nosso" ou
+        "controlador") coleta, usa, compartilha e protege os dados pessoais dos
+        usuários do serviço, em conformidade com a LGPD (Lei 13.709/2018) e demais
+        legislações aplicáveis.
       </p>
 
-      <h2>1. Dados que coletamos</h2>
+      <h2>1. Identificação do controlador</h2>
       <p>
-        <strong>Dados de cadastro</strong>: e-mail e senha (armazenada de forma
-        criptografada).<br />
-        <strong>Dados de uso</strong>: restaurantes, listas, notas, fotos e tags que
-        você adiciona.<br />
-        <strong>Dados de pagamento</strong>: processados exclusivamente pelo Paddle.
-        Não armazenamos número de cartão.
+        O controlador dos dados é <strong>John Charles Long</strong>, pessoa
+        responsável pela operação do produto To Go. Para qualquer assunto
+        relacionado a esta política ou ao tratamento dos seus dados, escreva para
+        o e-mail de suporte indicado no final deste documento.
       </p>
 
-      <h2>2. Como usamos seus dados</h2>
+      <h2>2. Categorias de dados pessoais coletados</h2>
       <p>
-        Usamos seus dados para fornecer o serviço, processar pagamentos da assinatura
-        Pro, enviar comunicações operacionais (recibos, alertas de cobrança) e melhorar
-        a experiência do produto.
+        <strong>Dados de cadastro</strong>: e-mail, senha (armazenada de forma
+        criptografada com hash), nome de usuário e display name (quando fornecido).<br />
+        <strong>Dados de perfil público</strong>: bio, cidade, foto e visibilidade
+        do perfil, conforme você configurar.<br />
+        <strong>Dados de uso</strong>: restaurantes, listas, notas, fotos, tags,
+        avaliações e atividades dentro do app.<br />
+        <strong>Dados técnicos</strong>: endereço IP, identificador de dispositivo,
+        logs de acesso e telemetria mínima necessária para segurança e operação.<br />
+        <strong>Dados de pagamento</strong>: tratados exclusivamente pelo Paddle
+        (Merchant of Record). Nós não armazenamos número de cartão.
       </p>
 
-      <h2>3. Compartilhamento</h2>
+      <h2>3. Finalidades e bases legais do tratamento</h2>
       <p>
-        Não vendemos seus dados. Compartilhamos apenas com provedores essenciais:
-        Supabase (hospedagem do banco), Paddle (pagamentos) e provedor de e-mail
-        transacional. Cada um trata os dados sob seus próprios termos.
+        Tratamos seus dados com as seguintes finalidades e bases legais (LGPD,
+        art. 7º):
       </p>
-
-      <h2>4. Seus direitos (LGPD)</h2>
       <p>
-        Você pode, a qualquer momento, solicitar acesso, correção, exportação ou
-        exclusão dos seus dados. Para isso, escreva para o e-mail de suporte.
+        <strong>Criação e manutenção da conta</strong> (e-mail, senha): execução
+        de contrato.<br />
+        <strong>Fornecimento das funcionalidades do app</strong> (listas,
+        restaurantes, notas): execução de contrato.<br />
+        <strong>Processamento da assinatura Pro e cobrança</strong>: execução de
+        contrato e cumprimento de obrigação legal/regulatória (fiscal).<br />
+        <strong>Comunicações operacionais</strong> (recibos, alertas de cobrança,
+        avisos de segurança): execução de contrato e legítimo interesse.<br />
+        <strong>Prevenção a fraude e segurança da plataforma</strong>: legítimo
+        interesse.<br />
+        <strong>Melhoria do produto e métricas agregadas</strong>: legítimo
+        interesse, sem identificação individual.<br />
+        <strong>Comunicações de marketing</strong> (quando aplicável): consentimento,
+        revogável a qualquer momento.
       </p>
 
-      <h2>5. Retenção</h2>
+      <h2>4. Compartilhamento e subprocessadores</h2>
       <p>
-        Mantemos seus dados enquanto sua conta estiver ativa. Após exclusão da conta,
-        os dados são removidos em até 30 dias, exceto registros financeiros que
-        precisamos manter por obrigação legal.
+        Não vendemos seus dados pessoais. Compartilhamos com as seguintes
+        categorias de destinatários, estritamente para as finalidades acima:
+      </p>
+      <p>
+        <strong>Provedores de infraestrutura</strong>: Supabase (hospedagem do
+        banco de dados, autenticação e storage).<br />
+        <strong>Merchant of Record / pagamentos</strong>: Paddle.com Market Limited,
+        responsável pelo processamento de pagamentos, gestão da assinatura, faturas,
+        impostos e reembolsos.<br />
+        <strong>Provedor de e-mail transacional</strong>: para envio de
+        confirmações, recuperação de senha e avisos.<br />
+        <strong>Assessores profissionais</strong> (jurídico, contábil), quando
+        necessário.<br />
+        <strong>Autoridades competentes</strong>, quando exigido por lei, ordem
+        judicial ou regulação aplicável.
       </p>
 
-      <h2>6. Cookies</h2>
+      <h2>5. Transferência internacional</h2>
+      <p>
+        Alguns dos provedores acima podem processar dados fora do Brasil. Nesses
+        casos, garantimos que o tratamento ocorra sob salvaguardas adequadas
+        previstas pela LGPD (art. 33), como cláusulas contratuais e provedores em
+        países com nível de proteção adequado.
+      </p>
+
+      <h2>6. Retenção</h2>
+      <p>
+        Mantemos seus dados enquanto sua conta estiver ativa. Após a exclusão da
+        conta, os dados são removidos em até 30 dias, exceto registros financeiros
+        e fiscais que precisamos manter por obrigação legal (mínimo 5 anos) e
+        registros mínimos necessários para defesa em eventual processo judicial.
+      </p>
+
+      <h2>7. Seus direitos (LGPD)</h2>
+      <p>
+        Você pode, a qualquer momento, solicitar: confirmação da existência de
+        tratamento; acesso aos dados; correção de dados incompletos, inexatos ou
+        desatualizados; anonimização, bloqueio ou eliminação de dados desnecessários
+        ou tratados em desconformidade; portabilidade; eliminação dos dados
+        tratados com base no consentimento; informação sobre compartilhamentos;
+        e revogação do consentimento. Para exercer esses direitos, escreva para o
+        e-mail de suporte. Você também tem direito a apresentar reclamação à ANPD
+        (Autoridade Nacional de Proteção de Dados).
+      </p>
+
+      <h2>8. Cookies</h2>
       <p>
         Usamos cookies essenciais para autenticação e funcionamento do app. Não
-        utilizamos cookies de rastreamento publicitário.
+        utilizamos cookies de rastreamento publicitário de terceiros.
       </p>
 
-      <h2>7. Segurança</h2>
+      <h2>9. Segurança</h2>
       <p>
-        Senhas são armazenadas com hash, comunicação é cifrada via HTTPS e o acesso
-        aos dados respeita políticas de segurança em nível de linha (RLS).
+        Adotamos medidas técnicas e organizacionais para proteger seus dados:
+        senhas armazenadas com hash, comunicação cifrada via HTTPS/TLS, políticas
+        de segurança em nível de linha (RLS) no banco de dados, controle de acesso
+        por papel e princípio do menor privilégio.
       </p>
 
-      <h2>8. Contato</h2>
+      <h2>10. Atualizações desta política</h2>
       <p>
-        Para exercer qualquer direito ou tirar dúvidas sobre privacidade, escreva para
-        o e-mail de suporte da empresa.
+        Podemos atualizar esta política periodicamente. Mudanças relevantes serão
+        comunicadas no app ou por e-mail. A data da última atualização aparece no
+        topo desta página.
+      </p>
+
+      <h2>11. Contato</h2>
+      <p>
+        Para exercer qualquer direito, retirar consentimento ou tirar dúvidas
+        sobre privacidade, escreva para o e-mail de suporte indicado dentro do app.
       </p>
 
       <p className="pt-4">
-        <Link to="/terms">Termos de Uso</Link> · <Link to="/refund">Política de Reembolso</Link>
+        <Link to="/terms">Termos de Uso</Link> ·{" "}
+        <Link to="/refund">Política de Reembolso</Link>
       </p>
     </Layout>
   );
@@ -98,7 +165,8 @@ function Layout({
       >
         <div className="mx-auto max-w-2xl">
           <Link
-            to="/pricing"
+            to="/"
+            search={{ list: undefined }}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground"
             aria-label="Voltar"
           >

@@ -79,9 +79,35 @@ function RootComponent() {
         <UpgradeModalProvider>
           <PaymentTestModeBanner />
           <Outlet />
+          <GlobalLegalFooter />
           <Toaster />
         </UpgradeModalProvider>
       </PlanProvider>
     </AuthProvider>
+  );
+}
+
+function GlobalLegalFooter() {
+  return (
+    <footer className="border-t border-border bg-background px-5 py-6 text-center text-xs text-muted-foreground">
+      <p>© {new Date().getFullYear()} John Charles Long · To Go</p>
+      <nav className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+        <Link to="/terms" className="hover:text-foreground hover:underline">
+          Termos de Uso
+        </Link>
+        <span aria-hidden>·</span>
+        <Link to="/privacy" className="hover:text-foreground hover:underline">
+          Privacidade
+        </Link>
+        <span aria-hidden>·</span>
+        <Link to="/refund" className="hover:text-foreground hover:underline">
+          Reembolso
+        </Link>
+        <span aria-hidden>·</span>
+        <Link to="/pricing" className="hover:text-foreground hover:underline">
+          Planos
+        </Link>
+      </nav>
+    </footer>
   );
 }
