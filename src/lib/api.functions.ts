@@ -202,7 +202,7 @@ export const addRestaurant = createServerFn({ method: "POST" })
 
     const { data: restaurant, error } = await supabase
       .from("restaurants")
-      .insert(insert)
+      .insert(insert as any)
       .select()
       .single();
 
