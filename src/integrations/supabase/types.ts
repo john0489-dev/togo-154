@@ -455,6 +455,22 @@ export type Database = {
         Args: { _list_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["list_role"]
       }
+      get_public_profile: {
+        Args: { _profile_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          city: string
+          created_at: string
+          display_name: string
+          followers_count: number
+          following_count: number
+          id: string
+          is_public: boolean
+          plan: string
+          username: string
+        }[]
+      }
       get_user_plan: { Args: { _user_id: string }; Returns: string }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
@@ -469,6 +485,10 @@ export type Database = {
       }
       is_list_member: {
         Args: { _list_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_profile_public_or_self: {
+        Args: { _profile_id: string }
         Returns: boolean
       }
     }
