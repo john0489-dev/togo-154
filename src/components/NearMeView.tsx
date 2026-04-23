@@ -141,7 +141,7 @@ export function NearMeView({ restaurants, onToggleVisited }: NearMeViewProps) {
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-sm font-semibold text-primary">
+                <p className="text-sm font-semibold" style={{ color: "#c4844a" }}>
                   {r.distance < 1 ? `${Math.round(r.distance * 1000)}m` : `${r.distance.toFixed(1)}km`}
                 </p>
                 {r.visited && r.rating > 0 && <p className="text-xs text-muted-foreground">⭐ {r.rating}</p>}
