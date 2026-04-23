@@ -58,15 +58,12 @@ export const createList = createServerFn({ method: "POST" })
   });
 
 // Delete a list (owner only — enforced by RLS)
+// Dependents (restaurants, list_invites, list_members) are removed automatically via ON DELETE CASCADE.
 export const deleteList = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ listId: z.string().uuid() }))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    // Delete dependents first (no ON DELETE CASCADE configured)
-    await supabase.from("restaurants").delete().eq("list_id", data.listId);
-    await supabase.from("list_invites").delete().eq("list_id", data.listId);
-    await supabase.from("list_members").delete().eq("list_id", data.listId);
     const { error } = await supabase.from("lists").delete().eq("id", data.listId);
     if (error) safeError("deleteList", error);
     return { success: true };
