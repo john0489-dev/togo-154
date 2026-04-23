@@ -261,6 +261,11 @@ function Index() {
     longitude?: number;
   }) => {
     if (!activeListId || !session) return;
+    // Client-side guard (server enforces too)
+    if (plan === "free" && limits.restaurants !== null && usage.restaurants >= limits.restaurants) {
+      window.alert(`Você atingiu o limite do plano Free (${limits.restaurants} restaurantes). Faça upgrade para Pro para adicionar mais.`);
+      return;
+    }
     try {
       await addRestaurant({
         data: {
@@ -275,10 +280,12 @@ function Index() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       loadRestaurants();
-    } catch (err) {
+      refreshPlan();
+    } catch (err: any) {
       console.error("Error adding restaurant:", err);
+      window.alert(err?.message ?? "Erro ao adicionar restaurante.");
     }
-  }, [activeListId, session]);
+  }, [activeListId, session, plan, limits.restaurants, usage.restaurants, refreshPlan]);
 
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
@@ -355,6 +362,10 @@ function Index() {
 
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
+    if (plan === "free" && limits.lists !== null && usage.lists >= limits.lists) {
+      window.alert(`Você atingiu o limite do plano Free (${limits.lists} listas). Faça upgrade para Pro para criar mais.`);
+      return;
+    }
     try {
       const { list } = await createList({
         data: { name: newListName.trim() },
@@ -365,8 +376,10 @@ function Index() {
       autoGeocodeStartedRef.current = null;
       setNewListName("");
       setListDropdown(false);
-    } catch (err) {
+      refreshPlan();
+    } catch (err: any) {
       console.error("Error creating list:", err);
+      window.alert(err?.message ?? "Erro ao criar lista.");
     }
   };
 
