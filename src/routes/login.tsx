@@ -65,80 +65,88 @@ function LoginPage() {
 
   return (
     <div
-      className="flex min-h-screen flex-col"
-      style={{ background: "#ffffff", padding: "0 28px" }}
+      className="flex min-h-screen flex-col items-center justify-center"
+      style={{ background: "#ffffff", padding: "32px 28px" }}
     >
-      {/* Topo */}
-      <div className="flex flex-1 flex-col items-center justify-center pt-16 pb-8">
-        <div
-          className="flex items-center justify-center"
-          style={{
-            width: 72,
-            height: 72,
-            borderRadius: 20,
-            background: "#f5f0e8",
-            border: "1px solid rgba(0,0,0,0.06)",
-            fontSize: 34,
-            lineHeight: 1,
-          }}
-          aria-hidden
-        >
-          🍽
+      {/* Conjunto centralizado: topo + formulário */}
+      <div className="w-full" style={{ maxWidth: 380 }}>
+        {/* Topo */}
+        <div className="flex flex-col items-center" style={{ marginBottom: 32 }}>
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 20,
+              background: "#f5f0e8",
+              border: "1px solid rgba(0,0,0,0.06)",
+              fontSize: 34,
+              lineHeight: 1,
+            }}
+            aria-hidden
+          >
+            🍽
+          </div>
+
+          <h1
+            style={{
+              fontFamily: "'Playfair Display', Georgia, serif",
+              fontSize: 32,
+              fontWeight: 400,
+              color: "#1a1a18",
+              letterSpacing: "-0.02em",
+              marginTop: 20,
+              lineHeight: 1.1,
+            }}
+          >
+            To Go
+          </h1>
+
+          <div
+            className="flex items-center"
+            style={{
+              marginTop: 12,
+              fontSize: 12,
+              color: "#999",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              gap: 10,
+            }}
+          >
+            <span>Salve</span>
+            <span
+              aria-hidden
+              style={{
+                width: 4,
+                height: 4,
+                minWidth: 4,
+                minHeight: 4,
+                borderRadius: "50%",
+                backgroundColor: "#d4a855",
+                display: "inline-block",
+                flexShrink: 0,
+              }}
+            />
+            <span>Explore</span>
+            <span
+              aria-hidden
+              style={{
+                width: 4,
+                height: 4,
+                minWidth: 4,
+                minHeight: 4,
+                borderRadius: "50%",
+                backgroundColor: "#d4a855",
+                display: "inline-block",
+                flexShrink: 0,
+              }}
+            />
+            <span>Visite</span>
+          </div>
         </div>
 
-        <h1
-          style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: 32,
-            fontWeight: 400,
-            color: "#1a1a18",
-            letterSpacing: "-0.02em",
-            marginTop: 20,
-            lineHeight: 1.1,
-          }}
-        >
-          To Go
-        </h1>
-
-        <div
-          className="flex items-center"
-          style={{
-            marginTop: 12,
-            fontSize: 12,
-            color: "#999",
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            gap: 10,
-          }}
-        >
-          <span>Salve</span>
-          <span
-            aria-hidden
-            style={{
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              background: "#d4a855",
-              display: "inline-block",
-            }}
-          />
-          <span>Explore</span>
-          <span
-            aria-hidden
-            style={{
-              width: 3,
-              height: 3,
-              borderRadius: "50%",
-              background: "#d4a855",
-              display: "inline-block",
-            }}
-          />
-          <span>Visite</span>
-        </div>
-      </div>
-
-      {/* Formulário */}
-      <div className="pb-10">
+        {/* Formulário */}
+        <div>
         <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
             <div
