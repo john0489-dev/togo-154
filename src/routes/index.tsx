@@ -643,6 +643,14 @@ function Index() {
               </div>
             </div>
 
+            {plan === "free" && (
+              <div className="flex flex-wrap gap-2">
+                <ProLockBadge variant="button" featureName="Filtros avançados" />
+                <ProLockBadge variant="button" featureName="Exportar PDF" />
+                <ProLockBadge variant="button" featureName="Tags" />
+              </div>
+            )}
+
             <div className="space-y-2.5 pb-20">
               {loading ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Carregando...</p>
