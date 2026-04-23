@@ -438,11 +438,12 @@ function Index() {
               <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
               <div className="flex items-center gap-2 min-w-0">
                 <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
-                <span
-                  className={`shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                <Link
+                  to="/pro"
+                  className={`shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
                     plan === "pro"
-                      ? "bg-amber-300 text-amber-900"
-                      : "bg-primary-foreground/20 text-primary-foreground"
+                      ? "bg-amber-300 text-amber-900 active:bg-amber-200"
+                      : "bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30"
                   }`}
                   title={
                     plan === "free" && limits.restaurants !== null
@@ -450,8 +451,9 @@ function Index() {
                       : "Plano Pro"
                   }
                 >
+                  {plan === "pro" && <Sparkles size={9} fill="currentColor" />}
                   {plan === "pro" ? "Pro" : "Free"}
-                </span>
+                </Link>
               </div>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
