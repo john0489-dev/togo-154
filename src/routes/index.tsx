@@ -266,7 +266,7 @@ function Index() {
     if (!activeListId || !session) return;
     // Client-side guard (server enforces too)
     if (plan === "free" && limits.restaurants !== null && usage.restaurants >= limits.restaurants) {
-      window.alert(`Você atingiu o limite do plano Free (${limits.restaurants} restaurantes). Faça upgrade para Pro para adicionar mais.`);
+      openUpgrade({ reason: "restaurants" });
       return;
     }
     try {
@@ -286,9 +286,14 @@ function Index() {
       refreshPlan();
     } catch (err: any) {
       console.error("Error adding restaurant:", err);
-      window.alert(err?.message ?? "Erro ao adicionar restaurante.");
+      // Server-side limit hit (race condition) — show modal
+      if (typeof err?.message === "string" && err.message.toLowerCase().includes("limite")) {
+        openUpgrade({ reason: "restaurants" });
+      } else {
+        window.alert(err?.message ?? "Erro ao adicionar restaurante.");
+      }
     }
-  }, [activeListId, session, plan, limits.restaurants, usage.restaurants, refreshPlan]);
+  }, [activeListId, session, plan, limits.restaurants, usage.restaurants, refreshPlan, openUpgrade]);
 
   const [geocoding, setGeocoding] = useState(false);
   const [geocodeMsg, setGeocodeMsg] = useState<string | null>(null);
@@ -366,7 +371,8 @@ function Index() {
   const handleCreateList = async () => {
     if (!newListName.trim() || !session) return;
     if (plan === "free" && limits.lists !== null && usage.lists >= limits.lists) {
-      window.alert(`Você atingiu o limite do plano Free (${limits.lists} listas). Faça upgrade para Pro para criar mais.`);
+      setListDropdown(false);
+      openUpgrade({ reason: "lists" });
       return;
     }
     try {
@@ -382,7 +388,12 @@ function Index() {
       refreshPlan();
     } catch (err: any) {
       console.error("Error creating list:", err);
-      window.alert(err?.message ?? "Erro ao criar lista.");
+      if (typeof err?.message === "string" && err.message.toLowerCase().includes("limite")) {
+        setListDropdown(false);
+        openUpgrade({ reason: "lists" });
+      } else {
+        window.alert(err?.message ?? "Erro ao criar lista.");
+      }
     }
   };
 
