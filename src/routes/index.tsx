@@ -235,10 +235,11 @@ function Index() {
         data: { id },
         headers: { Authorization: `Bearer ${token}` },
       });
+      refreshPlan();
     } catch {
       setRestaurants(prev);
     }
-  }, []);
+  }, [refreshPlan]);
 
   const handleRate = useCallback(async (id: string, rating: number) => {
     const token = tokenRef.current;
