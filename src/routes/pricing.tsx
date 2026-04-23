@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check, Sparkles, Loader2, Settings } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { usePlan } from "@/hooks/usePlan";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +14,14 @@ export const Route = createFileRoute("/pricing")({
       { name: "description", content: "Compare Free e Pro e escolha o melhor plano." },
       { property: "og:title", content: "Planos — To Go" },
       { property: "og:description", content: "Free para sempre ou Pro com recursos ilimitados." },
+    ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap",
+      },
     ],
   }),
   component: PricingPage,
@@ -75,7 +83,6 @@ function PricingPage() {
       });
       if (error || !data?.url) throw error || new Error("No URL");
       window.open(data.url, "_blank", "noopener");
-      // Refresh plan in case user changed something
       setTimeout(refresh, 2000);
     } catch (err) {
       console.error("[portal]", err);
@@ -85,46 +92,74 @@ function PricingPage() {
     }
   };
 
+  const serif = "'Playfair Display', Georgia, serif";
+
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: "#faf9f7" }}>
       <header
-        className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10"
-        style={{ background: "var(--hero-gradient)" }}
+        style={{
+          background: "#faf9f7",
+          padding: "max(20px, calc(env(safe-area-inset-top) + 12px)) 20px 20px",
+        }}
       >
         <div className="mx-auto max-w-lg">
           <button
             onClick={() => navigate({ to: "/", search: { list: undefined } })}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
+            className="flex items-center justify-center transition-colors"
+            style={{
+              width: 36,
+              height: 36,
+              background: "#fff",
+              border: "1px solid #ede9e3",
+              borderRadius: 10,
+              color: "#888",
+            }}
             aria-label="Voltar"
           >
             <ArrowLeft size={18} />
           </button>
 
-          <div className="mt-6 flex flex-col items-center text-center">
-            <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary-foreground/20 backdrop-blur-sm ring-2 ring-primary-foreground/30">
-              <Sparkles size={30} className="text-primary-foreground" fill="currentColor" />
-            </div>
-            <h1 className="text-3xl font-bold text-primary-foreground tracking-tight">
+          <div className="mt-7 flex flex-col items-center text-center">
+            <h1
+              style={{
+                fontFamily: serif,
+                fontSize: 28,
+                fontWeight: 400,
+                color: "#1a1a18",
+                letterSpacing: "-0.02em",
+                lineHeight: 1.1,
+              }}
+            >
               Escolha seu plano
             </h1>
-            <p className="mt-2 text-sm text-primary-foreground/85 max-w-xs">
+            <p style={{ marginTop: 10, fontSize: 14, color: "#aaa", maxWidth: 280 }}>
               Comece grátis. Faça upgrade quando quiser desbloquear todos os recursos.
             </p>
 
             <div
               role="tablist"
               aria-label="Período de cobrança"
-              className="mt-6 inline-flex rounded-full bg-primary-foreground/15 p-1 backdrop-blur-sm"
+              className="mt-6 inline-flex items-center"
+              style={{
+                background: "#fff",
+                border: "1px solid #ede9e3",
+                borderRadius: 100,
+                padding: 4,
+              }}
             >
               <button
                 role="tab"
                 aria-selected={billing === "monthly"}
                 onClick={() => setBilling("monthly")}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                  billing === "monthly"
-                    ? "bg-primary-foreground text-primary shadow-sm"
-                    : "text-primary-foreground/85"
-                }`}
+                className="transition-all"
+                style={{
+                  borderRadius: 100,
+                  padding: "6px 16px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: billing === "monthly" ? "#1a1a18" : "transparent",
+                  color: billing === "monthly" ? "#fff" : "#888",
+                }}
               >
                 Mensal
               </button>
@@ -132,14 +167,29 @@ function PricingPage() {
                 role="tab"
                 aria-selected={billing === "yearly"}
                 onClick={() => setBilling("yearly")}
-                className={`relative rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                  billing === "yearly"
-                    ? "bg-primary-foreground text-primary shadow-sm"
-                    : "text-primary-foreground/85"
-                }`}
+                className="transition-all inline-flex items-center gap-1.5"
+                style={{
+                  borderRadius: 100,
+                  padding: "6px 16px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: billing === "yearly" ? "#1a1a18" : "transparent",
+                  color: billing === "yearly" ? "#fff" : "#888",
+                }}
               >
                 Anual
-                <span className="ml-1.5 rounded-full bg-amber-300 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-900">
+                <span
+                  style={{
+                    background: "#f5efe0",
+                    color: "#c4844a",
+                    border: "1px solid #e8d9b0",
+                    borderRadius: 100,
+                    padding: "2px 6px",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.04em",
+                  }}
+                >
                   -45%
                 </span>
               </button>
@@ -148,28 +198,49 @@ function PricingPage() {
         </div>
       </header>
 
-      <div className="flex-1 mx-auto max-w-lg w-full px-4 -mt-6 pb-8 space-y-4">
+      <div className="flex-1 mx-auto max-w-lg w-full px-4 pt-4 pb-8 space-y-4">
         {/* Free */}
-        <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <section
+          style={{
+            background: "#fff",
+            border: "1px solid #ede9e3",
+            borderRadius: 20,
+            padding: 24,
+          }}
+        >
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-foreground">Free</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: "#1a1a18" }}>Free</h2>
             {!isPro && (
-              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+              <span
+                style={{
+                  background: "#f0ede8",
+                  color: "#888",
+                  border: "1px solid #e3ddd3",
+                  borderRadius: 100,
+                  padding: "3px 8px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}
+              >
                 Atual
               </span>
             )}
           </div>
-          <p className="mt-1 text-3xl font-bold text-foreground">
-            R$ 0
-            <span className="ml-1 text-sm font-normal text-muted-foreground">grátis para sempre</span>
+          <p style={{ marginTop: 10, color: "#1a1a18" }}>
+            <span style={{ fontSize: 32, fontWeight: 500 }}>R$ 0</span>
+            <span style={{ marginLeft: 8, fontSize: 13, color: "#aaa" }}>grátis para sempre</span>
           </p>
 
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-5 space-y-2.5">
             {FREE_FEATURES.map((f) => (
-              <li key={f} className="flex items-start gap-2.5 text-sm text-foreground">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15">
-                  <Check size={12} className="text-primary" strokeWidth={3} />
-                </span>
+              <li
+                key={f}
+                className="flex items-start gap-2.5"
+                style={{ fontSize: 14, color: "#1a1a18" }}
+              >
+                <Check size={16} style={{ color: "#c4844a", marginTop: 2, flexShrink: 0 }} strokeWidth={2.5} />
                 <span>{f}</span>
               </li>
             ))}
@@ -178,106 +249,148 @@ function PricingPage() {
 
         {/* Pro */}
         <section
-          className="relative rounded-2xl p-[2px] shadow-xl"
-          style={{ background: "var(--hero-gradient)" }}
+          className="relative"
+          style={{
+            background: "#1a1a18",
+            borderRadius: 20,
+            padding: 24,
+            paddingTop: 28,
+          }}
         >
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-            <span className="rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-950 shadow-md">
-              ⭐ Recomendado
+            <span
+              style={{
+                background: "#d4a855",
+                color: "#fff",
+                borderRadius: 100,
+                padding: "4px 12px",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+              }}
+            >
+              Recomendado
             </span>
           </div>
 
-          <div className="rounded-[14px] bg-card p-5 pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">Pro</h2>
-                <Sparkles size={14} className="text-amber-500" fill="currentColor" />
-              </div>
-              {isPro && (
-                <span className="rounded-full bg-amber-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-900">
-                  Ativo
-                </span>
-              )}
-            </div>
-
-            {billing === "monthly" ? (
-              <p className="mt-1 text-3xl font-bold text-foreground">
-                R$ 14,90
-                <span className="ml-1 text-sm font-normal text-muted-foreground">/mês</span>
-              </p>
-            ) : (
-              <>
-                <p className="mt-1 text-3xl font-bold text-foreground">
-                  R$ 99
-                  <span className="ml-1 text-sm font-normal text-muted-foreground">/ano</span>
-                </p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  ≈ R$ {yearlyMonthly}/mês ·{" "}
-                  <span className="font-semibold text-primary">economize 45%</span>
-                </p>
-              </>
+          <div className="flex items-center justify-between">
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>Pro</h2>
+            {isPro && (
+              <span
+                style={{
+                  background: "rgba(212, 168, 85, 0.15)",
+                  color: "#d4a855",
+                  border: "1px solid rgba(212, 168, 85, 0.4)",
+                  borderRadius: 100,
+                  padding: "3px 8px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Ativo
+              </span>
             )}
+          </div>
 
-            <ul className="mt-4 space-y-2">
-              {PRO_FEATURES.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-foreground">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15">
-                    <Check size={12} className="text-primary" strokeWidth={3} />
-                  </span>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-5 space-y-2">
-              {isPro ? (
-                <button
-                  type="button"
-                  onClick={handleManage}
-                  disabled={portalLoading}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform disabled:opacity-70"
-                  style={{ background: "var(--hero-gradient)" }}
-                >
-                  {portalLoading ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      Abrindo portal…
-                    </>
-                  ) : (
-                    <>
-                      <Settings size={14} />
-                      Gerenciar assinatura
-                    </>
-                  )}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleSubscribe}
-                  disabled={checkoutLoading}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform disabled:opacity-70"
-                  style={{ background: "var(--hero-gradient)" }}
-                >
-                  {checkoutLoading ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      Abrindo checkout…
-                    </>
-                  ) : billing === "monthly" ? (
-                    "Assinar Pro — R$ 14,90/mês"
-                  ) : (
-                    "Assinar Pro — R$ 99/ano"
-                  )}
-                </button>
-              )}
-              <p className="text-center text-[11px] text-muted-foreground">
-                Pagamento seguro via Paddle. Cancele quando quiser.
+          {billing === "monthly" ? (
+            <p style={{ marginTop: 10, color: "#fff" }}>
+              <span style={{ fontSize: 32, fontWeight: 500 }}>R$ 14,90</span>
+              <span style={{ marginLeft: 8, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>/mês</span>
+            </p>
+          ) : (
+            <>
+              <p style={{ marginTop: 10, color: "#fff" }}>
+                <span style={{ fontSize: 32, fontWeight: 500 }}>R$ 99</span>
+                <span style={{ marginLeft: 8, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>/ano</span>
               </p>
-            </div>
+              <p style={{ marginTop: 4, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>
+                ≈ R$ {yearlyMonthly}/mês ·{" "}
+                <span style={{ color: "#d4a855", fontWeight: 600 }}>economize 45%</span>
+              </p>
+            </>
+          )}
+
+          <ul className="mt-5 space-y-2.5">
+            {PRO_FEATURES.map((f) => (
+              <li
+                key={f}
+                className="flex items-start gap-2.5"
+                style={{ fontSize: 14, color: "#fff" }}
+              >
+                <Check size={16} style={{ color: "#d4a855", marginTop: 2, flexShrink: 0 }} strokeWidth={2.5} />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-6 space-y-2">
+            {isPro ? (
+              <button
+                type="button"
+                onClick={handleManage}
+                disabled={portalLoading}
+                className="w-full inline-flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-70"
+                style={{
+                  height: 52,
+                  background: "linear-gradient(135deg, #d4a855 0%, #c4944a 100%)",
+                  borderRadius: 14,
+                  color: "#fff",
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                {portalLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Abrindo portal…
+                  </>
+                ) : (
+                  <>
+                    <Settings size={16} />
+                    Gerenciar assinatura
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubscribe}
+                disabled={checkoutLoading}
+                className="w-full inline-flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-70"
+                style={{
+                  height: 52,
+                  background: "linear-gradient(135deg, #d4a855 0%, #c4944a 100%)",
+                  borderRadius: 14,
+                  color: "#fff",
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                {checkoutLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Abrindo checkout…
+                  </>
+                ) : billing === "monthly" ? (
+                  "Assinar Pro — R$ 14,90/mês"
+                ) : (
+                  "Assinar Pro — R$ 99/ano"
+                )}
+              </button>
+            )}
+            <p className="text-center" style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>
+              Pagamento seguro via Paddle. Cancele quando quiser.
+            </p>
           </div>
         </section>
 
-        <div className="flex items-center justify-center gap-3 pt-2 text-[11px] text-muted-foreground">
+        <div
+          className="flex items-center justify-center gap-3 pt-2"
+          style={{ fontSize: 11, color: "#bbb" }}
+        >
           <Link to="/terms" className="hover:underline">Termos</Link>
           <span aria-hidden>·</span>
           <Link to="/privacy" className="hover:underline">Privacidade</Link>
@@ -288,7 +401,8 @@ function PricingPage() {
         <Link
           to="/"
           search={{ list: undefined }}
-          className="block text-center text-sm text-muted-foreground active:text-foreground py-2"
+          className="block text-center py-2"
+          style={{ fontSize: 14, color: "#aaa" }}
         >
           Voltar ao app
         </Link>
