@@ -263,6 +263,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_add_restaurant: { Args: { _user_id: string }; Returns: boolean }
+      count_user_restaurants: { Args: { _user_id: string }; Returns: number }
       get_list_role: {
         Args: { _list_id: string; _user_id: string }
         Returns: Database["public"]["Enums"]["list_role"]
