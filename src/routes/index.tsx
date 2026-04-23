@@ -11,6 +11,8 @@ import { usePlan } from "@/hooks/usePlan";
 import { useUpgradeModal } from "@/hooks/useUpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
 
+import { ProLockBadge } from "@/components/ProLockBadge";
+
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 import {
   getUserLists,
