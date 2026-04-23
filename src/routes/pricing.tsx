@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check, Sparkles, Mail, Loader2 } from "lucide-react";
-import { z } from "zod";
+import { ArrowLeft, Check, Sparkles, Loader2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { usePlan } from "@/hooks/usePlan";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/pricing")({
@@ -36,62 +36,57 @@ const PRO_FEATURES = [
   "Exportar em PDF",
 ];
 
-const emailSchema = z
-  .string()
-  .trim()
-  .min(1, "Informe seu e-mail")
-  .max(255, "E-mail muito longo")
-  .email("E-mail inválido");
-
 function PricingPage() {
   const navigate = useNavigate();
-  const { plan } = usePlan();
-  const { user } = useAuth();
+  const { plan, refresh } = usePlan();
+  const { user, session } = useAuth();
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const isPro = plan === "pro";
 
   const [billing, setBilling] = useState<"monthly" | "yearly">("yearly");
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleJoinWaitlist = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = emailSchema.safeParse(email);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "E-mail inválido");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const { error } = await supabase.from("waitlist").insert({
-        email: parsed.data,
-        user_id: user?.id ?? null,
-      });
-      if (error) {
-        // Unique violation → e-mail já está na lista
-        if (error.code === "23505") {
-          setSubmitted(true);
-          toast.success("Você já está na lista de espera ✨");
-        } else {
-          throw error;
-        }
-      } else {
-        setSubmitted(true);
-        toast.success("Em breve! Você entrou na lista de espera ✨");
-      }
-    } catch (err: unknown) {
-      console.error("[waitlist] insert failed:", err);
-      toast.error("Não foi possível entrar na lista. Tente novamente.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const yearlyMonthly = (99 / 12).toFixed(2).replace(".", ",");
 
+  const handleSubscribe = async () => {
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    try {
+      await openCheckout({
+        priceId: billing === "monthly" ? "togo_pro_monthly" : "togo_pro_yearly",
+        userId: user.id,
+        customerEmail: user.email ?? undefined,
+        successUrl: `${window.location.origin}/payment/success`,
+      });
+    } catch (err) {
+      console.error("[checkout]", err);
+      toast.error("Erro ao processar. Tente novamente.");
+    }
+  };
+
+  const handleManage = async () => {
+    if (!session?.access_token) return;
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (error || !data?.url) throw error || new Error("No URL");
+      window.open(data.url, "_blank", "noopener");
+      // Refresh plan in case user changed something
+      setTimeout(refresh, 2000);
+    } catch (err) {
+      console.error("[portal]", err);
+      toast.error("Não foi possível abrir o portal. Tente novamente.");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
-      {/* Hero */}
       <header
         className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-10"
         style={{ background: "var(--hero-gradient)" }}
@@ -116,7 +111,6 @@ function PricingPage() {
               Comece grátis. Faça upgrade quando quiser desbloquear todos os recursos.
             </p>
 
-            {/* Billing toggle */}
             <div
               role="tablist"
               aria-label="Período de cobrança"
@@ -154,7 +148,6 @@ function PricingPage() {
         </div>
       </header>
 
-      {/* Plans */}
       <div className="flex-1 mx-auto max-w-lg w-full px-4 -mt-6 pb-8 space-y-4">
         {/* Free */}
         <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
@@ -181,14 +174,6 @@ function PricingPage() {
               </li>
             ))}
           </ul>
-
-          <button
-            type="button"
-            disabled={!isPro}
-            className="mt-5 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm font-semibold text-muted-foreground disabled:cursor-not-allowed"
-          >
-            {isPro ? "Voltar para Free" : "Plano atual"}
-          </button>
         </section>
 
         {/* Pro */}
@@ -196,7 +181,6 @@ function PricingPage() {
           className="relative rounded-2xl p-[2px] shadow-xl"
           style={{ background: "var(--hero-gradient)" }}
         >
-          {/* Recommended ribbon */}
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
             <span className="rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-950 shadow-md">
               ⭐ Recomendado
@@ -245,63 +229,61 @@ function PricingPage() {
               ))}
             </ul>
 
-            {/* Waitlist form */}
-            {submitted ? (
-              <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-center">
-                <p className="text-sm font-semibold text-foreground">
-                  ✨ Você está na lista!
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Avisaremos assim que o pagamento for liberado.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleJoinWaitlist} className="mt-5 space-y-2">
-                <label htmlFor="waitlist-email" className="sr-only">
-                  Seu e-mail
-                </label>
-                <div className="relative">
-                  <Mail
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <input
-                    id="waitlist-email"
-                    type="email"
-                    inputMode="email"
-                    autoComplete="email"
-                    required
-                    maxLength={255}
-                    placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-input bg-background pl-9 pr-3 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  />
-                </div>
+            <div className="mt-5 space-y-2">
+              {isPro ? (
                 <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform disabled:opacity-70 disabled:active:scale-100"
+                  type="button"
+                  onClick={handleManage}
+                  disabled={portalLoading}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform disabled:opacity-70"
                   style={{ background: "var(--hero-gradient)" }}
                 >
-                  {submitting ? (
-                    <span className="inline-flex items-center gap-2">
+                  {portalLoading ? (
+                    <>
                       <Loader2 size={14} className="animate-spin" />
-                      Enviando…
-                    </span>
+                      Abrindo portal…
+                    </>
+                  ) : (
+                    <>
+                      <Settings size={14} />
+                      Gerenciar assinatura
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubscribe}
+                  disabled={checkoutLoading}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform disabled:opacity-70"
+                  style={{ background: "var(--hero-gradient)" }}
+                >
+                  {checkoutLoading ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      Abrindo checkout…
+                    </>
                   ) : billing === "monthly" ? (
                     "Assinar Pro — R$ 14,90/mês"
                   ) : (
                     "Assinar Pro — R$ 99/ano"
                   )}
                 </button>
-                <p className="text-center text-[11px] text-muted-foreground">
-                  Em breve! Entre na lista de espera e seja avisado quando lançarmos.
-                </p>
-              </form>
-            )}
+              )}
+              <p className="text-center text-[11px] text-muted-foreground">
+                Pagamento seguro via Paddle. Cancele quando quiser.
+              </p>
+            </div>
           </div>
         </section>
+
+        <div className="flex items-center justify-center gap-3 pt-2 text-[11px] text-muted-foreground">
+          <Link to="/terms" className="hover:underline">Termos</Link>
+          <span aria-hidden>·</span>
+          <Link to="/privacy" className="hover:underline">Privacidade</Link>
+          <span aria-hidden>·</span>
+          <Link to="/refund" className="hover:underline">Reembolso</Link>
+        </div>
 
         <Link
           to="/"
