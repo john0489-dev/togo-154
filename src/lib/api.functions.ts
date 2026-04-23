@@ -218,7 +218,15 @@ export const addRestaurant = createServerFn({ method: "POST" })
       .select()
       .single();
 
-    if (error) safeError("addRestaurant", error);
+    if (error) {
+      // RLS policy violation = plan limit hit at the DB level (defense in depth)
+      if (error.code === "42501" || /row-level security/i.test(error.message ?? "")) {
+        throw new Error(
+          `Limite do plano Free atingido (${FREE_RESTAURANT_LIMIT} restaurantes). Faça upgrade para Pro para adicionar mais.`
+        );
+      }
+      safeError("addRestaurant", error);
+    }
     return { restaurant };
   });
 
@@ -629,9 +637,18 @@ export const seedDefaultRestaurants = createServerFn({ method: "POST" })
 
     if (count && count > 0) return { seeded: false };
 
+    // Respect Free plan limit: only seed up to remaining quota
+    const plan = await fetchUserPlan(supabase, userId);
+    let availableSlots = Number.MAX_SAFE_INTEGER;
+    if (plan === "free") {
+      const used = await countUserRestaurants(supabase, userId);
+      availableSlots = Math.max(0, FREE_RESTAURANT_LIMIT - used);
+      if (availableSlots === 0) return { seeded: false };
+    }
+
     // Import default data
     const { default: defaultData } = await import("@/lib/restaurant-defaults");
-    const rows = defaultData.map((r) => ({
+    const rows = defaultData.slice(0, availableSlots).map((r) => ({
       list_id: data.listId,
       name: r.name,
       location: r.location,
