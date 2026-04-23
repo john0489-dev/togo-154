@@ -281,14 +281,6 @@ function PricingPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  onClick={(e) => {
-                    // Friendly popup as required by spec, in addition to inline waitlist save
-                    if (!submitting && email.trim()) {
-                      // toast handled inside handleJoinWaitlist; this just gives the user the requested message hint
-                      // we don't preventDefault so the form still submits
-                      void e;
-                    }
-                  }}
                   className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-md active:scale-[0.98] transition-transform disabled:opacity-70 disabled:active:scale-100"
                   style={{ background: "var(--hero-gradient)" }}
                 >
