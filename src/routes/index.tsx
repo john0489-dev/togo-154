@@ -36,6 +36,14 @@ export const Route = createFileRoute("/")({
       { title: "To Go — Sua lista pessoal de restaurantes" },
       { name: "description", content: "Gerencie sua lista pessoal de restaurantes e bares para visitar." },
     ],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&display=swap",
+      },
+    ],
   }),
   component: IndexWrapper,
 });
@@ -431,38 +439,80 @@ function Index() {
   const activeList = lists.find((l) => l.id === activeListId);
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
+    <div className="min-h-[100dvh] flex flex-col" style={{ background: "#faf9f7" }}>
       {/* Header */}
-      <header className="px-5 pt-[max(1.5rem,env(safe-area-inset-top))] pb-5 shrink-0" style={{ background: "var(--hero-gradient)" }}>
+      <header
+        className="shrink-0"
+        style={{
+          background: "#faf9f7",
+          borderBottom: "1px solid #ede9e3",
+          padding: "max(52px, calc(env(safe-area-inset-top) + 16px)) 20px 20px",
+        }}
+      >
         <div className="mx-auto max-w-lg">
           <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold text-primary-foreground tracking-tight">To Go</h1>
-              <div className="flex items-center gap-2 min-w-0">
-                <p className="text-xs text-primary-foreground/70 truncate">{user?.email}</p>
-                <Link
-                  to="/pricing"
-                  className={`shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider transition-colors ${
-                    plan === "pro"
-                      ? "bg-amber-300 text-amber-900 active:bg-amber-200"
-                      : "bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30"
-                  }`}
-                  title={
-                    plan === "free" && limits.restaurants !== null
-                      ? `${usage.restaurants}/${limits.restaurants} restaurantes · ${usage.lists}/${limits.lists} listas`
-                      : "Plano Pro"
-                  }
-                >
-                  {plan === "pro" && <Sparkles size={9} fill="currentColor" />}
-                  {plan === "pro" ? "Pro" : "Free"}
-                </Link>
-              </div>
+            <div className="min-w-0 flex items-center gap-2.5">
+              <h1
+                style={{
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontSize: 22,
+                  fontWeight: 400,
+                  color: "#1a1a18",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
+                To Go
+              </h1>
+              <Link
+                to="/pricing"
+                title={
+                  plan === "free" && limits.restaurants !== null
+                    ? `${usage.restaurants}/${limits.restaurants} restaurantes · ${usage.lists}/${limits.lists} listas`
+                    : "Plano Pro"
+                }
+                style={
+                  plan === "pro"
+                    ? {
+                        background: "#f5efe0",
+                        border: "1px solid #e8d9b0",
+                        color: "#c4844a",
+                        fontSize: 10,
+                        padding: "3px 8px",
+                        borderRadius: 6,
+                        fontWeight: 600,
+                        letterSpacing: "0.04em",
+                        lineHeight: 1.2,
+                      }
+                    : {
+                        background: "#f0ede8",
+                        border: "1px solid #e3ddd3",
+                        color: "#999",
+                        fontSize: 10,
+                        padding: "3px 8px",
+                        borderRadius: 6,
+                        fontWeight: 600,
+                        letterSpacing: "0.04em",
+                        lineHeight: 1.2,
+                      }
+                }
+              >
+                {plan === "pro" ? "✦ PRO" : "FREE"}
+              </Link>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {isUserAdmin && (
                 <Link
                   to="/admin"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
+                  className="flex items-center justify-center transition-colors"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    background: "#fff",
+                    border: "1px solid #ede9e3",
+                    borderRadius: 10,
+                    color: "#888",
+                  }}
                   aria-label="Painel admin"
                 >
                   <Shield size={16} />
@@ -471,52 +521,97 @@ function Index() {
               {activeListId && activeList?.created_by === user?.id && (
                 <button
                   onClick={() => setInviteOpen(true)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
+                  className="flex items-center justify-center transition-colors"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    background: "#fff",
+                    border: "1px solid #ede9e3",
+                    borderRadius: 10,
+                    color: "#888",
+                  }}
+                  aria-label="Convidar"
                 >
                   <Users size={16} />
                 </button>
               )}
               <button
-                onClick={() => setDialogOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground text-primary shadow-md active:scale-95 transition-transform"
-              >
-                <Plus size={20} />
-              </button>
-              <button
                 onClick={handleLogout}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-foreground/20 text-primary-foreground active:bg-primary-foreground/30 transition-colors"
+                className="flex items-center justify-center transition-colors"
+                style={{
+                  width: 36,
+                  height: 36,
+                  background: "#fff",
+                  border: "1px solid #ede9e3",
+                  borderRadius: 10,
+                  color: "#888",
+                }}
+                aria-label="Sair"
               >
                 <LogOut size={16} />
+              </button>
+              <button
+                onClick={() => setDialogOpen(true)}
+                className="flex items-center justify-center active:scale-95 transition-transform"
+                style={{
+                  width: 36,
+                  height: 36,
+                  background: "#1a1a18",
+                  borderRadius: 10,
+                  color: "#fff",
+                }}
+                aria-label="Adicionar restaurante"
+              >
+                <Plus size={20} />
               </button>
             </div>
           </div>
 
           {/* List selector */}
-          <div className="mt-3 relative">
+          <div className="mt-4 relative">
             <button
               onClick={() => setListDropdown(!listDropdown)}
-              className="flex w-full items-center justify-between rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm"
+              className="flex w-full items-center justify-between"
+              style={{
+                background: "#fff",
+                border: "1px solid #ede9e3",
+                borderRadius: 12,
+                padding: "10px 14px",
+                fontSize: 14,
+                color: "#1a1a18",
+              }}
             >
               <span className="truncate">{activeList?.name || "Selecionar lista"}</span>
-              <ChevronDown size={16} className="shrink-0 ml-2" />
+              <ChevronDown size={16} className="shrink-0 ml-2" style={{ color: "#888" }} />
             </button>
             {listDropdown && (
-              <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-border bg-card shadow-lg overflow-hidden">
+              <div
+                className="absolute top-full left-0 right-0 z-50 mt-1 overflow-hidden"
+                style={{
+                  background: "#fff",
+                  border: "1px solid #ede9e3",
+                  borderRadius: 12,
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                }}
+              >
                 {lists.map((l) => (
                   <div
                     key={l.id}
-                    className={`flex items-center ${l.id === activeListId ? "bg-accent" : ""}`}
+                    className="flex items-center"
+                    style={l.id === activeListId ? { background: "#faf9f7" } : undefined}
                   >
                     <button
                       onClick={() => { setActiveListId(l.id); setListDropdown(false); }}
-                      className={`flex-1 px-4 py-2.5 text-left text-sm active:bg-accent transition-colors ${l.id === activeListId ? "font-medium text-foreground" : "text-foreground"}`}
+                      className="flex-1 px-4 py-2.5 text-left text-sm transition-colors"
+                      style={{ color: "#1a1a18", fontWeight: l.id === activeListId ? 500 : 400 }}
                     >
                       {l.name}
                     </button>
                     {l.created_by === user?.id && (
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDeleteList(l.id, l.name); }}
-                        className="flex h-9 w-9 items-center justify-center text-muted-foreground active:text-destructive active:bg-destructive/10 transition-colors mr-1 rounded"
+                        className="flex h-9 w-9 items-center justify-center mr-1 rounded transition-colors"
+                        style={{ color: "#bbb" }}
                         aria-label={`Excluir lista ${l.name}`}
                       >
                         <Trash2 size={15} />
@@ -524,17 +619,24 @@ function Index() {
                     )}
                   </div>
                 ))}
-                <div className="border-t border-border p-2 flex gap-2">
+                <div className="p-2 flex gap-2" style={{ borderTop: "1px solid #ede9e3" }}>
                   <input
                     value={newListName}
                     onChange={(e) => setNewListName(e.target.value)}
                     placeholder="Nova lista..."
-                    className="flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="flex-1 px-2 py-1.5 text-sm focus:outline-none"
+                    style={{
+                      background: "#faf9f7",
+                      border: "1px solid #ede9e3",
+                      borderRadius: 8,
+                      color: "#1a1a18",
+                    }}
                     onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
                   />
                   <button
                     onClick={handleCreateList}
-                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                    className="px-3 py-1.5 text-xs font-medium"
+                    style={{ background: "#1a1a18", color: "#fff", borderRadius: 8 }}
                   >
                     Criar
                   </button>
@@ -543,24 +645,32 @@ function Index() {
             )}
           </div>
 
-          <div className="mt-3 grid grid-cols-3 gap-2 rounded-xl bg-primary-foreground/15 px-3 py-3 backdrop-blur-sm">
+          <div
+            className="mt-3 grid grid-cols-3"
+            style={{
+              background: "#fff",
+              border: "1px solid #ede9e3",
+              borderRadius: 14,
+              padding: "14px 0",
+            }}
+          >
             <div className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
+              <p style={{ fontSize: 9, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
                 Total
               </p>
-              <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{totalCount}</p>
+              <p style={{ marginTop: 4, fontSize: 24, fontWeight: 500, color: "#1a1a18", lineHeight: 1 }}>{totalCount}</p>
             </div>
-            <div className="text-center border-x border-primary-foreground/20">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
+            <div className="text-center" style={{ borderLeft: "1px solid #ede9e3", borderRight: "1px solid #ede9e3" }}>
+              <p style={{ fontSize: 9, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
                 Visitados
               </p>
-              <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{visitedCount}</p>
+              <p style={{ marginTop: 4, fontSize: 24, fontWeight: 500, color: "#1a1a18", lineHeight: 1 }}>{visitedCount}</p>
             </div>
             <div className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/80">
+              <p style={{ fontSize: 9, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
                 Para visitar
               </p>
-              <p className="mt-0.5 text-2xl font-bold text-primary-foreground">{toVisitCount}</p>
+              <p style={{ marginTop: 4, fontSize: 24, fontWeight: 500, color: "#1a1a18", lineHeight: 1 }}>{toVisitCount}</p>
             </div>
           </div>
         </div>
@@ -704,31 +814,31 @@ function Index() {
       </div>
 
       {/* Bottom tab bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom)]"
+        style={{ background: "#faf9f7", borderTop: "1px solid #ede9e3" }}
+      >
         <div className="mx-auto max-w-lg flex">
           <button
             onClick={() => switchTab("list")}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-              tab === "list" ? "text-primary" : "text-muted-foreground"
-            }`}
+            className="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors"
+            style={{ color: tab === "list" ? "#c4844a" : "#bbb" }}
           >
             <List size={20} />
             Lista
           </button>
           <button
             onClick={() => switchTab("location")}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-              tab === "location" ? "text-primary" : "text-muted-foreground"
-            }`}
+            className="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors"
+            style={{ color: tab === "location" ? "#c4844a" : "#bbb" }}
           >
             <MapPin size={20} />
             Mapa
           </button>
           <button
             onClick={() => switchTab("nearme")}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors ${
-              tab === "nearme" ? "text-primary" : "text-muted-foreground"
-            }`}
+            className="flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium transition-colors"
+            style={{ color: tab === "nearme" ? "#c4844a" : "#bbb" }}
           >
             <Navigation size={20} />
             Perto
