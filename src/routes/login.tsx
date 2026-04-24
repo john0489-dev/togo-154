@@ -84,7 +84,7 @@ function LoginPage() {
             }}
             aria-hidden
           >
-            <AppLogo size={44} />
+            <AppLogo size={56} />
           </div>
 
           <h1
