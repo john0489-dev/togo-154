@@ -12,8 +12,11 @@ import { useUpgradeModal } from "@/hooks/useUpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
 
 import { ProLockBadge } from "@/components/ProLockBadge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
+
+const PAGE_SIZE = 20;
 import {
   getUserLists,
   getRestaurants,
