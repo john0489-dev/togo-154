@@ -794,19 +794,30 @@ function Index() {
 
             <div className="space-y-2.5 pb-20">
               {loading ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">Carregando...</p>
+                <div className="space-y-2.5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-[88px] w-full rounded-xl" />
+                  ))}
+                </div>
               ) : filtered.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Nenhum restaurante encontrado.</p>
               ) : (
-                filtered.map((r) => (
-                  <RestaurantCard
-                    key={r.id}
-                    restaurant={r}
-                    onToggleVisited={handleToggleVisited}
-                    onDelete={handleDelete}
-                    onRate={handleRate}
-                  />
-                ))
+                <>
+                  {visibleRestaurants.map((r) => (
+                    <RestaurantCard
+                      key={r.id}
+                      restaurant={r}
+                      onToggleVisited={handleToggleVisited}
+                      onDelete={handleDelete}
+                      onRate={handleRate}
+                    />
+                  ))}
+                  {hasMore && (
+                    <div ref={sentinelRef} className="py-4 flex justify-center">
+                      <Skeleton className="h-[88px] w-full rounded-xl" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
         </div>
