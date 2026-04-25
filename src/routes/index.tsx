@@ -12,8 +12,11 @@ import { useUpgradeModal } from "@/hooks/useUpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
 
 import { ProLockBadge } from "@/components/ProLockBadge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
+
+const PAGE_SIZE = 20;
 import {
   getUserLists,
   getRestaurants,
@@ -221,6 +224,34 @@ function Index() {
       })
       .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
   }, [restaurants, deferredSearch, statusFilter, cuisineFilter]);
+
+  // Pagination: render only first N items, load more on scroll
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [deferredSearch, statusFilter, cuisineFilter, restaurants.length]);
+  const visibleRestaurants = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+  const hasMore = visibleCount < filtered.length;
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!hasMore) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [hasMore, filtered.length]);
 
   const handleToggleVisited = useCallback(async (id: string) => {
     const r = restaurantsRef.current.find((r) => r.id === id);
@@ -763,19 +794,30 @@ function Index() {
 
             <div className="space-y-2.5 pb-20">
               {loading ? (
-                <p className="py-8 text-center text-sm text-muted-foreground">Carregando...</p>
+                <div className="space-y-2.5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-[88px] w-full rounded-xl" />
+                  ))}
+                </div>
               ) : filtered.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Nenhum restaurante encontrado.</p>
               ) : (
-                filtered.map((r) => (
-                  <RestaurantCard
-                    key={r.id}
-                    restaurant={r}
-                    onToggleVisited={handleToggleVisited}
-                    onDelete={handleDelete}
-                    onRate={handleRate}
-                  />
-                ))
+                <>
+                  {visibleRestaurants.map((r) => (
+                    <RestaurantCard
+                      key={r.id}
+                      restaurant={r}
+                      onToggleVisited={handleToggleVisited}
+                      onDelete={handleDelete}
+                      onRate={handleRate}
+                    />
+                  ))}
+                  {hasMore && (
+                    <div ref={sentinelRef} className="py-4 flex justify-center">
+                      <Skeleton className="h-[88px] w-full rounded-xl" />
+                    </div>
+                  )}
+                </>
               )}
             </div>
         </div>
