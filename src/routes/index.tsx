@@ -225,6 +225,34 @@ function Index() {
       .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
   }, [restaurants, deferredSearch, statusFilter, cuisineFilter]);
 
+  // Pagination: render only first N items, load more on scroll
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [deferredSearch, statusFilter, cuisineFilter, restaurants.length]);
+  const visibleRestaurants = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+  const hasMore = visibleCount < filtered.length;
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!hasMore) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisibleCount((c) => Math.min(c + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [hasMore, filtered.length]);
+
   const handleToggleVisited = useCallback(async (id: string) => {
     const r = restaurantsRef.current.find((r) => r.id === id);
     const token = tokenRef.current;
