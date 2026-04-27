@@ -14,7 +14,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProLockBadge } from "@/components/ProLockBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdvancedFiltersSheet, EMPTY_ADVANCED_FILTERS, countActiveFilters, type AdvancedFilters } from "@/components/AdvancedFiltersSheet";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, FileDown } from "lucide-react";
+import { ExportPdfDialog, type ExportPdfOptionsValue } from "@/components/ExportPdfDialog";
+import { exportRestaurantsToPdf, type ExportSection, type ExportRestaurant } from "@/lib/exportPdf";
+import { toast } from "sonner";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 
@@ -125,6 +128,7 @@ function Index() {
   const cuisineDropdownRef = useRef<HTMLDivElement>(null);
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(EMPTY_ADVANCED_FILTERS);
   const [advancedSheetOpen, setAdvancedSheetOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
@@ -329,6 +333,56 @@ function Index() {
       });
     } catch {}
   }, []);
+
+  const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
+    const token = tokenRef.current;
+    if (!token) return;
+    try {
+      const sections: ExportSection[] = [];
+      const activeList = lists.find((l) => l.id === activeListId);
+
+      if (opts.scope === "current" || lists.length <= 1) {
+        sections.push({
+          listName: activeList?.name ?? "Minha Lista",
+          restaurants: restaurantsRef.current as unknown as ExportRestaurant[],
+        });
+      } else {
+        const results = await Promise.all(
+          lists.map(async (l) => {
+            try {
+              const { restaurants: data } = await getRestaurants({
+                data: { listId: l.id },
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              return { listName: l.name, restaurants: (data ?? []) as ExportRestaurant[] };
+            } catch {
+              return { listName: l.name, restaurants: [] as ExportRestaurant[] };
+            }
+          })
+        );
+        sections.push(...results);
+      }
+
+      const filenameBase =
+        opts.scope === "all" && lists.length > 1
+          ? "todas-as-listas"
+          : activeList?.name ?? "minha-lista";
+
+      exportRestaurantsToPdf({
+        sections,
+        includeNotes: opts.includeNotes,
+        sortBy: opts.sortBy,
+        includeStatus: opts.includeStatus,
+        filenameBase,
+      });
+
+      setExportOpen(false);
+      toast.success("PDF exportado com sucesso!");
+    } catch (err) {
+      console.error("[exportPdf] failed:", err);
+      toast.error("Não foi possível gerar o PDF.");
+    }
+  }, [activeListId, lists]);
 
   const handleAdd = useCallback(async (data: {
     name: string;
@@ -820,22 +874,32 @@ function Index() {
 
             <div className="flex flex-wrap gap-2">
               {plan === "pro" ? (
-                <button
-                  type="button"
-                  onClick={() => setAdvancedSheetOpen(true)}
-                  className="flex items-center gap-1.5 rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
-                >
-                  <SlidersHorizontal size={12} />
-                  <span>Filtros avançados</span>
-                  {advancedActiveCount > 0 && (
-                    <span
-                      className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
-                      style={{ background: "#c4844a" }}
-                    >
-                      {advancedActiveCount}
-                    </span>
-                  )}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedSheetOpen(true)}
+                    className="flex items-center gap-1.5 rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                  >
+                    <SlidersHorizontal size={12} />
+                    <span>Filtros avançados</span>
+                    {advancedActiveCount > 0 && (
+                      <span
+                        className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                        style={{ background: "#c4844a" }}
+                      >
+                        {advancedActiveCount}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExportOpen(true)}
+                    className="flex items-center gap-1.5 rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                  >
+                    <FileDown size={12} />
+                    <span>Exportar PDF</span>
+                  </button>
+                </>
               ) : (
                 <>
                   <ProLockBadge variant="button" featureName="Filtros avançados" />
@@ -964,6 +1028,13 @@ function Index() {
         onChange={setAdvancedFilters}
         availableCuisines={cuisines}
         availableTags={availableTags}
+      />
+      <ExportPdfDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        onConfirm={handleExportPdf}
+        allowAllLists={lists.length > 1}
+        currentListName={lists.find((l) => l.id === activeListId)?.name ?? "Minha Lista"}
       />
     </div>
   );
