@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { StarRating } from "./StarRating";
 import { RestaurantPhotos } from "./RestaurantPhotos";
+import { RestaurantNotesEditor } from "./RestaurantNotesEditor";
+import { RestaurantTagsEditor } from "./RestaurantTagsEditor";
 import { supabase } from "@/integrations/supabase/client";
 
 export type RestaurantDetails = {
