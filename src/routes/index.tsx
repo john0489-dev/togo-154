@@ -1107,6 +1107,17 @@ function Index() {
         allowAllLists={lists.length > 1}
         currentListName={lists.find((l) => l.id === activeListId)?.name ?? "Minha Lista"}
       />
+      <ChefAIWidget
+        restaurants={restaurants.map((r) => ({
+          name: r.name,
+          cuisine: r.cuisine,
+          location: r.location,
+          rating: r.rating,
+          visited: r.visited,
+          occasion: r.occasion,
+          tags: r.tags,
+        }))}
+      />
     </div>
   );
 }
