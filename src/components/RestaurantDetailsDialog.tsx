@@ -257,6 +257,18 @@ export function RestaurantDetailsDialog({
                   )}
                 </div>
               )}
+              {wazeUrl && (
+                <a
+                  href={wazeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1.5 flex items-center gap-1 text-xs font-medium hover:underline"
+                  style={{ color: "#c4844a" }}
+                >
+                  <Navigation2 size={12} />
+                  Abrir no Waze
+                </a>
+              )}
             </div>
           </div>
 
