@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdvancedFiltersSheet, EMPTY_ADVANCED_FILTERS, countActiveFilters, type AdvancedFilters } from "@/components/AdvancedFiltersSheet";
 import { SlidersHorizontal, FileDown } from "lucide-react";
 import { ExportPdfDialog, type ExportPdfOptionsValue } from "@/components/ExportPdfDialog";
+import { ChefAIWidget } from "@/components/ChefAIWidget";
 import { exportRestaurantsToPdf, type ExportSection, type ExportRestaurant } from "@/lib/exportPdf";
 import { toast } from "sonner";
 
@@ -1105,6 +1106,17 @@ function Index() {
         onConfirm={handleExportPdf}
         allowAllLists={lists.length > 1}
         currentListName={lists.find((l) => l.id === activeListId)?.name ?? "Minha Lista"}
+      />
+      <ChefAIWidget
+        restaurants={restaurants.map((r) => ({
+          name: r.name,
+          cuisine: r.cuisine,
+          location: r.location,
+          rating: r.rating,
+          visited: r.visited,
+          occasion: r.occasion,
+          tags: r.tags,
+        }))}
       />
     </div>
   );
