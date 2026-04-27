@@ -236,28 +236,8 @@ function Index() {
     }
   };
 
-  // Load restaurants when active list changes
-  useEffect(() => {
-    if (!activeListId || !accessToken) return;
-    loadRestaurants();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeListId, accessToken]);
-
-  const loadRestaurants = async () => {
-    if (!activeListId || !tokenRef.current) return;
-    setLoading(true);
-    try {
-      const { restaurants: data } = await getRestaurants({
-        data: { listId: activeListId },
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
-      });
-      setRestaurants(data as Restaurant[]);
-    } catch (err) {
-      console.error("Error loading restaurants:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Restaurants are fetched declaratively by useQuery (queryKey: ['restaurants', activeListId])
+  // so switching lists and coming back is instant from cache.
 
   const deferredSearch = useDeferredValue(search);
 
