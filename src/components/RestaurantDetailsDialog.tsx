@@ -182,6 +182,31 @@ export function RestaurantDetailsDialog({
             </div>
           </div>
 
+          {/* Notes */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Notas
+            </p>
+            <RestaurantNotesEditor
+              restaurantId={restaurant.id}
+              notes={restaurant.notes ?? ""}
+              onChange={(notes) => onNotesChange?.(restaurant.id, notes)}
+            />
+          </div>
+
+          {/* Tags */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Tags
+            </p>
+            <RestaurantTagsEditor
+              restaurantId={restaurant.id}
+              tags={restaurant.tags ?? []}
+              suggestions={tagSuggestions}
+              onChange={(tags) => onTagsChange?.(restaurant.id, tags)}
+            />
+          </div>
+
           {/* Meta */}
           <div className="grid grid-cols-1 gap-2 text-sm">
             {createdAt && (
