@@ -4,8 +4,8 @@
   "description": "Sua lista pessoal de restaurantes",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a1a",
-  "theme_color": "#86d9b0",
+  "background_color": "#f5f0e8",
+  "theme_color": "#f5f0e8",
   "orientation": "portrait",
   "icons": [
     {
