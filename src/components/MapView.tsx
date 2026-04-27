@@ -164,8 +164,10 @@ function MapViewImpl({ restaurants }: MapViewProps) {
         preferCanvas={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+          crossOrigin
         />
         <FitToUser markers={fitMarkers} />
         <MarkersLayer markers={markersData} />
