@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { StarRating } from "./StarRating";
-import { RestaurantPhotos } from "./RestaurantPhotos";
 import { supabase } from "@/integrations/supabase/client";
 
 export type RestaurantDetails = {
