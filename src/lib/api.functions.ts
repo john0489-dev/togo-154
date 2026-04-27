@@ -239,6 +239,7 @@ export const updateRestaurant = createServerFn({ method: "POST" })
       address: z.string().max(300).optional(),
       latitude: z.number().optional(),
       longitude: z.number().optional(),
+      photos: z.array(z.string().url().max(1000)).max(3).optional(),
     })
   )
   .handler(async ({ data, context }) => {
@@ -250,6 +251,7 @@ export const updateRestaurant = createServerFn({ method: "POST" })
       address?: string;
       latitude?: number;
       longitude?: number;
+      photos?: string[];
     } = {};
     if (data.visited !== undefined) update.visited = data.visited;
     if (data.rating !== undefined) update.rating = data.rating;
@@ -257,6 +259,7 @@ export const updateRestaurant = createServerFn({ method: "POST" })
     if (data.address !== undefined) update.address = data.address;
     if (data.latitude !== undefined) update.latitude = data.latitude;
     if (data.longitude !== undefined) update.longitude = data.longitude;
+    if (data.photos !== undefined) update.photos = data.photos;
 
     const { error } = await supabase
       .from("restaurants")
