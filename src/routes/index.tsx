@@ -113,7 +113,6 @@ function Index() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const routeSearch = Route.useSearch();
-  const [lists, setLists] = useState<ListItem[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
   const [tab, setTab] = useState<Tab>("list");
   const [mountedTabs, setMountedTabs] = useState<{ location: boolean; nearme: boolean }>({ location: false, nearme: false });
