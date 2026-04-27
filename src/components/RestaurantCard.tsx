@@ -1,6 +1,5 @@
 import { memo, useState } from "react";
 import { Trash2, CheckCircle2, Circle } from "lucide-react";
-import { StarRating } from "./StarRating";
 import { RestaurantDetailsDialog, type RestaurantDetails } from "./RestaurantDetailsDialog";
 
 interface RestaurantCardProps {
