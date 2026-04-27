@@ -750,6 +750,9 @@ function Index() {
                   >
                     <button
                       onClick={() => { setActiveListId(l.id); setListDropdown(false); }}
+                      onMouseEnter={() => prefetchList(l.id)}
+                      onFocus={() => prefetchList(l.id)}
+                      onTouchStart={() => prefetchList(l.id)}
                       className="flex-1 px-4 py-2.5 text-left text-sm transition-colors"
                       style={{ color: "#1a1a18", fontWeight: l.id === activeListId ? 500 : 400 }}
                     >
