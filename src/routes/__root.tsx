@@ -53,6 +53,9 @@ export const Route = createRootRoute({
     links: [
       { rel: "preconnect", href: "https://rfsvfqynjoiglvornrvp.supabase.co", crossOrigin: "anonymous" },
       { rel: "dns-prefetch", href: "https://rfsvfqynjoiglvornrvp.supabase.co" },
+      { rel: "dns-prefetch", href: "https://a.tile.openstreetmap.org" },
+      { rel: "dns-prefetch", href: "https://b.tile.openstreetmap.org" },
+      { rel: "dns-prefetch", href: "https://c.tile.openstreetmap.org" },
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
