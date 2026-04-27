@@ -335,9 +335,6 @@ function Index() {
     } catch {}
   }, []);
 
-  const handlePhotosChange = useCallback((id: string, photos: string[]) => {
-    setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, photos } : r)));
-  }, []);
 
   const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
     const token = tokenRef.current;
