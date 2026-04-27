@@ -37,7 +37,7 @@ export function RestaurantPhotos({ restaurantId, photos, onChange, variant }: Pr
 
   const triggerPicker = () => {
     if (!isPro) {
-      upgrade.open("Fotos");
+      upgrade.open({ featureName: "Fotos são exclusivas do To Go Pro" });
       return;
     }
     if (!canAddMore) {
