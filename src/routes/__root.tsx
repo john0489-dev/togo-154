@@ -1,4 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PlanProvider } from "@/hooks/usePlan";
 import { UpgradeModalProvider } from "@/hooks/useUpgradeModal";
@@ -77,17 +79,33 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  // Fresh QueryClient per browser session (and per SSR request)
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30 * 1000,
+            gcTime: 5 * 60 * 1000,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
+
   return (
-    <AuthProvider>
-      <PlanProvider>
-        <UpgradeModalProvider>
-          <PaymentTestModeBanner />
-          <Outlet />
-          <GlobalLegalFooter />
-          <Toaster />
-        </UpgradeModalProvider>
-      </PlanProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PlanProvider>
+          <UpgradeModalProvider>
+            <PaymentTestModeBanner />
+            <Outlet />
+            <GlobalLegalFooter />
+            <Toaster />
+          </UpgradeModalProvider>
+        </PlanProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
