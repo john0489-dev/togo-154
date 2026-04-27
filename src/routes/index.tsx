@@ -110,10 +110,10 @@ function Index() {
   const { plan, usage, limits, refresh: refreshPlan } = usePlan();
   const { open: openUpgrade } = useUpgradeModal();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [tab, setTab] = useState<Tab>("list");
   const [mountedTabs, setMountedTabs] = useState<{ location: boolean; nearme: boolean }>({ location: false, nearme: false });
 
@@ -135,11 +135,47 @@ function Index() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const [loading, setLoading] = useState(true);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
   // Stable token reference for effect deps
   const accessToken = session?.access_token;
+
+  // Restaurants are cached by [list_id]. Switching lists and coming back is instant.
+  const restaurantsQueryKey = useMemo(
+    () => ["restaurants", activeListId] as const,
+    [activeListId]
+  );
+
+  const restaurantsQuery = useQuery({
+    queryKey: restaurantsQueryKey,
+    enabled: !!activeListId && !!accessToken,
+    queryFn: async () => {
+      if (!activeListId || !accessToken) return [] as Restaurant[];
+      const { restaurants: data } = await getRestaurants({
+        data: { listId: activeListId },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return (data ?? []) as Restaurant[];
+    },
+  });
+
+  const restaurants = restaurantsQuery.data ?? [];
+  const loading = restaurantsQuery.isLoading;
+
+  // Helper to update the cached list for the active list (used by optimistic mutations)
+  const setRestaurants = useCallback(
+    (updater: Restaurant[] | ((prev: Restaurant[]) => Restaurant[])) => {
+      queryClient.setQueryData<Restaurant[]>(restaurantsQueryKey, (prev) => {
+        const base = prev ?? [];
+        return typeof updater === "function" ? (updater as (p: Restaurant[]) => Restaurant[])(base) : updater;
+      });
+    },
+    [queryClient, restaurantsQueryKey]
+  );
+
+  const loadRestaurants = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: restaurantsQueryKey });
+  }, [queryClient, restaurantsQueryKey]);
 
   // Refs to keep callbacks stable across re-renders
   const restaurantsRef = useRef(restaurants);
