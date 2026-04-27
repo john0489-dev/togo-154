@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X, Navigation2 } from "lucide-react";
+import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
@@ -230,44 +230,35 @@ export function RestaurantDetailsDialog({
                 </p>
               )}
               {(mapsUrl || wazeUrl) && (
-                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs font-medium">
                   {mapsUrl && (
                     <a
                       href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      className="inline-flex items-center gap-1 hover:underline"
                       style={{ color: "#c4844a" }}
                     >
                       Abrir no Google Maps
                       <ExternalLink size={12} />
                     </a>
                   )}
+                  {mapsUrl && wazeUrl && (
+                    <span aria-hidden="true" style={{ color: "#bbb" }}>·</span>
+                  )}
                   {wazeUrl && (
                     <a
                       href={wazeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      className="inline-flex items-center gap-1 hover:underline"
                       style={{ color: "#c4844a" }}
                     >
-                      <Navigation2 size={12} />
                       Abrir no Waze
+                      <ExternalLink size={12} />
                     </a>
                   )}
                 </div>
-              )}
-              {wazeUrl && (
-                <a
-                  href={wazeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-1.5 flex items-center gap-1 text-xs font-medium hover:underline"
-                  style={{ color: "#c4844a" }}
-                >
-                  <Navigation2 size={12} />
-                  Abrir no Waze
-                </a>
               )}
             </div>
           </div>
