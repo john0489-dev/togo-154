@@ -73,6 +73,7 @@ type Restaurant = {
   price_range?: string | null;
   occasion?: string | null;
   tags?: string[] | null;
+  photos?: string[] | null;
 };
 type ListItem = {
   id: string;
@@ -332,6 +333,10 @@ function Index() {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch {}
+  }, []);
+
+  const handlePhotosChange = useCallback((id: string, photos: string[]) => {
+    setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, photos } : r)));
   }, []);
 
   const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
@@ -927,6 +932,7 @@ function Index() {
                       onToggleVisited={handleToggleVisited}
                       onDelete={handleDelete}
                       onRate={handleRate}
+                      onPhotosChange={handlePhotosChange}
                     />
                   ))}
                   {hasMore && (

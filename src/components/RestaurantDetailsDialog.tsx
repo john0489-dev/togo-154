@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { StarRating } from "./StarRating";
+import { RestaurantPhotos } from "./RestaurantPhotos";
 import { supabase } from "@/integrations/supabase/client";
 
 export type RestaurantDetails = {
@@ -22,6 +23,7 @@ export type RestaurantDetails = {
   added_by?: string | null;
   created_at?: string;
   list_id?: string | null;
+  photos?: string[] | null;
 };
 
 interface Props {
@@ -31,6 +33,7 @@ interface Props {
   onToggleVisited: (id: string) => void;
   onDelete: (id: string) => void;
   onRate: (id: string, rating: number) => void;
+  onPhotosChange?: (id: string, photos: string[]) => void;
 }
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" });
@@ -42,6 +45,7 @@ export function RestaurantDetailsDialog({
   onToggleVisited,
   onDelete,
   onRate,
+  onPhotosChange,
 }: Props) {
   const [addedByEmail, setAddedByEmail] = useState<string | null>(null);
 
@@ -113,6 +117,19 @@ export function RestaurantDetailsDialog({
         </div>
 
         <div className="px-6 py-5 space-y-4">
+          {/* Photos */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Fotos
+            </p>
+            <RestaurantPhotos
+              restaurantId={restaurant.id}
+              photos={restaurant.photos ?? []}
+              onChange={(next) => onPhotosChange?.(restaurant.id, next)}
+              variant="carousel"
+            />
+          </div>
+
           {/* Location */}
           <div className="flex items-start gap-3">
             <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />

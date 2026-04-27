@@ -313,6 +313,7 @@ export type Database = {
           notes: string | null
           occasion: string | null
           photo_url: string | null
+          photos: string[]
           price_range: string | null
           rating: number
           tags: string[]
@@ -334,6 +335,7 @@ export type Database = {
           notes?: string | null
           occasion?: string | null
           photo_url?: string | null
+          photos?: string[]
           price_range?: string | null
           rating?: number
           tags?: string[]
@@ -355,6 +357,7 @@ export type Database = {
           notes?: string | null
           occasion?: string | null
           photo_url?: string | null
+          photos?: string[]
           price_range?: string | null
           rating?: number
           tags?: string[]
