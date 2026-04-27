@@ -334,6 +334,56 @@ function Index() {
     } catch {}
   }, []);
 
+  const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
+    const token = tokenRef.current;
+    if (!token) return;
+    try {
+      const sections: ExportSection[] = [];
+      const activeList = lists.find((l) => l.id === activeListId);
+
+      if (opts.scope === "current" || lists.length <= 1) {
+        sections.push({
+          listName: activeList?.name ?? "Minha Lista",
+          restaurants: restaurantsRef.current as unknown as ExportRestaurant[],
+        });
+      } else {
+        const results = await Promise.all(
+          lists.map(async (l) => {
+            try {
+              const { restaurants: data } = await getRestaurants({
+                data: { listId: l.id },
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              return { listName: l.name, restaurants: (data ?? []) as ExportRestaurant[] };
+            } catch {
+              return { listName: l.name, restaurants: [] as ExportRestaurant[] };
+            }
+          })
+        );
+        sections.push(...results);
+      }
+
+      const filenameBase =
+        opts.scope === "all" && lists.length > 1
+          ? "todas-as-listas"
+          : activeList?.name ?? "minha-lista";
+
+      exportRestaurantsToPdf({
+        sections,
+        includeNotes: opts.includeNotes,
+        sortBy: opts.sortBy,
+        includeStatus: opts.includeStatus,
+        filenameBase,
+      });
+
+      setExportOpen(false);
+      toast.success("PDF exportado com sucesso!");
+    } catch (err) {
+      console.error("[exportPdf] failed:", err);
+      toast.error("Não foi possível gerar o PDF.");
+    }
+  }, [activeListId, lists]);
+
   const handleAdd = useCallback(async (data: {
     name: string;
     location: string;
