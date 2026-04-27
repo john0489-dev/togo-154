@@ -123,6 +123,8 @@ function Index() {
   const [cuisineFilter, setCuisineFilter] = useState<string[]>([]);
   const [cuisineDropdownOpen, setCuisineDropdownOpen] = useState(false);
   const cuisineDropdownRef = useRef<HTMLDivElement>(null);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(EMPTY_ADVANCED_FILTERS);
+  const [advancedSheetOpen, setAdvancedSheetOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
