@@ -181,22 +181,14 @@ export function AdvancedFiltersSheet({
                     key={n}
                     type="button"
                     onClick={() => onChange({ ...value, minRating: n })}
-                    className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    className={`rounded-full px-3 py-1.5 transition-colors ${
                       active
                         ? "bg-[#c4844a] text-white"
-                        : "bg-gray-100 text-gray-700 active:bg-gray-200"
+                        : "bg-[#f5f2ee] text-[#888] active:bg-gray-200"
                     }`}
+                    style={{ fontSize: "13px", fontWeight: 500 }}
                   >
-                    {n === 0 ? (
-                      "Qualquer"
-                    ) : (
-                      <>
-                        {Array.from({ length: n }).map((_, i) => (
-                          <Star key={i} size={12} fill="currentColor" strokeWidth={0} />
-                        ))}
-                        <span className="ml-0.5">+</span>
-                      </>
-                    )}
+                    {n === 0 ? "Qualquer" : `${n}+`}
                   </button>
                 );
               })}
