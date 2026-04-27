@@ -339,7 +339,7 @@ function Index() {
     setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, photos } : r)));
   }, []);
 
-
+  const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
     const token = tokenRef.current;
     if (!token) return;
     try {
