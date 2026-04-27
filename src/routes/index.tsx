@@ -107,7 +107,7 @@ function IndexWrapper() {
 }
 
 function Index() {
-  const { user, session } = useAuth();
+  const { user, session, isAuthenticated } = useAuth();
   const { plan, usage, limits, refresh: refreshPlan } = usePlan();
   const { open: openUpgrade } = useUpgradeModal();
   const navigate = useNavigate();
@@ -162,6 +162,14 @@ function Index() {
 
   const restaurants = restaurantsQuery.data ?? [];
   const loading = restaurantsQuery.isLoading;
+
+  // [Debug] temporary logs to diagnose dashboard load
+  if (typeof window !== "undefined") {
+    console.log("[Debug] isAuthenticated:", isAuthenticated, "accessToken:", !!accessToken);
+    console.log("[Debug] lists:", lists);
+    console.log("[Debug] activeListId:", activeListId);
+    console.log("[Debug] restaurants:", restaurants.length);
+  }
 
   // Helper to update the cached list for the active list (used by optimistic mutations)
   const setRestaurants = useCallback(
@@ -220,18 +228,22 @@ function Index() {
     return Array.from(set).sort();
   }, [restaurants]);
 
-  // Load lists
+  // Load lists — gated on authenticated session with valid access token
   useEffect(() => {
-    if (!accessToken) return;
-    loadLists();
+    if (!isAuthenticated || !accessToken) return;
+    loadLists(accessToken);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [isAuthenticated, accessToken]);
 
-  const loadLists = async () => {
-    if (!tokenRef.current) return;
+  const loadLists = async (token?: string) => {
+    const authToken = token ?? tokenRef.current;
+    if (!authToken) {
+      console.warn("[Debug] loadLists skipped: no access token");
+      return;
+    }
     try {
       const { lists: data } = await getUserLists({
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
       const mapped = data
         .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
@@ -243,14 +255,14 @@ function Index() {
         // No memberships — create default list
         const { list } = await createList({
           data: { name: "Minha Lista" },
-          headers: { Authorization: `Bearer ${tokenRef.current}` },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
         setLists([{ id: list.id, name: list.name, created_by: list.created_by }]);
         setActiveListId(list.id);
         // Seed default restaurants
         await seedDefaultRestaurants({
           data: { listId: list.id },
-          headers: { Authorization: `Bearer ${tokenRef.current}` },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
       }
     } catch (err) {
