@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect, useRef, useDeferredValue } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, List, MapPin, Navigation, LogOut, Users, ChevronDown, Wand2, Trash2, Shield, Sparkles } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { NearMeView } from "@/components/NearMeView";
@@ -109,10 +110,10 @@ function Index() {
   const { plan, usage, limits, refresh: refreshPlan } = usePlan();
   const { open: openUpgrade } = useUpgradeModal();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const routeSearch = Route.useSearch();
   const [lists, setLists] = useState<ListItem[]>([]);
   const [activeListId, setActiveListId] = useState<string | null>(routeSearch.list ?? null);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [tab, setTab] = useState<Tab>("list");
   const [mountedTabs, setMountedTabs] = useState<{ location: boolean; nearme: boolean }>({ location: false, nearme: false });
 
@@ -134,11 +135,66 @@ function Index() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [listDropdown, setListDropdown] = useState(false);
   const [newListName, setNewListName] = useState("");
-  const [loading, setLoading] = useState(true);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
   // Stable token reference for effect deps
   const accessToken = session?.access_token;
+
+  // Restaurants are cached by [list_id]. Switching lists and coming back is instant.
+  const restaurantsQueryKey = useMemo(
+    () => ["restaurants", activeListId] as const,
+    [activeListId]
+  );
+
+  const restaurantsQuery = useQuery({
+    queryKey: restaurantsQueryKey,
+    enabled: !!activeListId && !!accessToken,
+    queryFn: async () => {
+      if (!activeListId || !accessToken) return [] as Restaurant[];
+      const { restaurants: data } = await getRestaurants({
+        data: { listId: activeListId },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return (data ?? []) as Restaurant[];
+    },
+  });
+
+  const restaurants = restaurantsQuery.data ?? [];
+  const loading = restaurantsQuery.isLoading;
+
+  // Helper to update the cached list for the active list (used by optimistic mutations)
+  const setRestaurants = useCallback(
+    (updater: Restaurant[] | ((prev: Restaurant[]) => Restaurant[])) => {
+      queryClient.setQueryData<Restaurant[]>(restaurantsQueryKey, (prev) => {
+        const base = prev ?? [];
+        return typeof updater === "function" ? (updater as (p: Restaurant[]) => Restaurant[])(base) : updater;
+      });
+    },
+    [queryClient, restaurantsQueryKey]
+  );
+
+  const loadRestaurants = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: restaurantsQueryKey });
+  }, [queryClient, restaurantsQueryKey]);
+
+  // Prefetch a list's restaurants on hover/focus of the list selector
+  const prefetchList = useCallback(
+    (listId: string) => {
+      const token = tokenRef.current;
+      if (!listId || !token || listId === activeListId) return;
+      queryClient.prefetchQuery({
+        queryKey: ["restaurants", listId],
+        queryFn: async () => {
+          const { restaurants: data } = await getRestaurants({
+            data: { listId },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          return (data ?? []) as Restaurant[];
+        },
+      });
+    },
+    [queryClient, activeListId]
+  );
 
   // Refs to keep callbacks stable across re-renders
   const restaurantsRef = useRef(restaurants);
@@ -199,28 +255,8 @@ function Index() {
     }
   };
 
-  // Load restaurants when active list changes
-  useEffect(() => {
-    if (!activeListId || !accessToken) return;
-    loadRestaurants();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeListId, accessToken]);
-
-  const loadRestaurants = async () => {
-    if (!activeListId || !tokenRef.current) return;
-    setLoading(true);
-    try {
-      const { restaurants: data } = await getRestaurants({
-        data: { listId: activeListId },
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
-      });
-      setRestaurants(data as Restaurant[]);
-    } catch (err) {
-      console.error("Error loading restaurants:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Restaurants are fetched declaratively by useQuery (queryKey: ['restaurants', activeListId])
+  // so switching lists and coming back is instant from cache.
 
   const deferredSearch = useDeferredValue(search);
 
@@ -733,6 +769,9 @@ function Index() {
                   >
                     <button
                       onClick={() => { setActiveListId(l.id); setListDropdown(false); }}
+                      onMouseEnter={() => prefetchList(l.id)}
+                      onFocus={() => prefetchList(l.id)}
+                      onTouchStart={() => prefetchList(l.id)}
                       className="flex-1 px-4 py-2.5 text-left text-sm transition-colors"
                       style={{ color: "#1a1a18", fontWeight: l.id === activeListId ? 500 : 400 }}
                     >
