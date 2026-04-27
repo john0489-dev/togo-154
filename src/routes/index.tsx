@@ -335,7 +335,11 @@ function Index() {
     } catch {}
   }, []);
 
-  const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
+  const handlePhotosChange = useCallback((id: string, photos: string[]) => {
+    setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, photos } : r)));
+  }, []);
+
+
     const token = tokenRef.current;
     if (!token) return;
     try {
