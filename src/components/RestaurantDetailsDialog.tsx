@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X } from "lucide-react";
+import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X, Navigation2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,6 +65,13 @@ export function RestaurantDetailsDialog({
       ? `https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`
       : restaurant.address
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`
+        : null;
+
+  const wazeUrl =
+    restaurant.latitude != null && restaurant.longitude != null
+      ? `https://waze.com/ul?ll=${restaurant.latitude},${restaurant.longitude}&navigate=yes`
+      : restaurant.address
+        ? `https://waze.com/ul?q=${encodeURIComponent(restaurant.address)}`
         : null;
 
   const createdAt = restaurant.created_at ? new Date(restaurant.created_at) : null;
@@ -222,17 +229,33 @@ export function RestaurantDetailsDialog({
                   {restaurant.address}
                 </p>
               )}
-              {mapsUrl && (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                  style={{ color: "#c4844a" }}
-                >
-                  Abrir no Google Maps
-                  <ExternalLink size={12} />
-                </a>
+              {(mapsUrl || wazeUrl) && (
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  {mapsUrl && (
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      style={{ color: "#c4844a" }}
+                    >
+                      Abrir no Google Maps
+                      <ExternalLink size={12} />
+                    </a>
+                  )}
+                  {wazeUrl && (
+                    <a
+                      href={wazeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      style={{ color: "#c4844a" }}
+                    >
+                      <Navigation2 size={12} />
+                      Abrir no Waze
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           </div>
