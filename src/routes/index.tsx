@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { ProLockBadge } from "@/components/ProLockBadge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdvancedFiltersSheet, EMPTY_ADVANCED_FILTERS, countActiveFilters, type AdvancedFilters } from "@/components/AdvancedFiltersSheet";
+import { SlidersHorizontal } from "lucide-react";
 
 const LazyMapView = lazy(() => import("@/components/MapView").then(m => ({ default: m.MapView })));
 
