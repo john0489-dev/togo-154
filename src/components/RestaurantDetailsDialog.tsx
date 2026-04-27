@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 
 export type RestaurantDetails = {
@@ -153,7 +154,7 @@ export function RestaurantDetailsDialog({
                   <span
                     style={{
                       fontFamily: '"Playfair Display", serif',
-                      fontSize: 40,
+                      fontSize: 32,
                       fontWeight: 700,
                       color: "#c4844a",
                       lineHeight: 1,
@@ -161,35 +162,46 @@ export function RestaurantDetailsDialog({
                   >
                     {ratingDisplay}
                   </span>
-                  <span className="text-sm" style={{ color: "#888" }}>/ 10</span>
+                  <span style={{ color: "#888", fontSize: 16 }}>/10</span>
                 </>
               ) : (
                 <span className="text-sm" style={{ color: "#888" }}>Sem avaliação</span>
               )}
             </div>
 
-            {/* 0-10 buttons */}
-            <div className="mt-4 grid grid-cols-11 gap-1">
-              {Array.from({ length: 11 }).map((_, n) => {
-                const active = ratingValue === n;
-                return (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => onRate(restaurant.id, n)}
-                    className="h-9 rounded-lg text-xs font-medium transition-colors"
-                    style={
-                      active
-                        ? { background: "#c4844a", color: "#fff", border: "1px solid #c4844a" }
-                        : { background: "#fff", color: "#1a1a18", border: "1px solid #ede9e3" }
-                    }
-                    aria-label={`Avaliar com ${n}`}
-                  >
-                    {n}
-                  </button>
-                );
-              })}
+            {/* Slider 0-10, step 0.5 */}
+            <div className="mt-4 [&_[data-slot=slider-track]]:bg-[#f3ede0] [&_[data-slot=slider-range]]:bg-[#c4844a] [&_[data-slot=slider-thumb]]:border-[#c4844a] [&_[data-slot=slider-thumb]]:bg-white">
+              <Slider
+                value={[ratingValue]}
+                min={0}
+                max={10}
+                step={0.5}
+                onValueChange={(v) => onRate(restaurant.id, v[0] ?? 0)}
+                aria-label="Avaliação de 0 a 10"
+                style={
+                  {
+                    ["--slider-track" as string]: "#f3ede0",
+                    ["--slider-range" as string]: "#c4844a",
+                  } as React.CSSProperties
+                }
+              />
+              <div className="mt-2 flex justify-between text-[11px]" style={{ color: "#888" }}>
+                <span>0</span>
+                <span>5</span>
+                <span>10</span>
+              </div>
             </div>
+
+            {ratingValue > 0 && (
+              <button
+                type="button"
+                onClick={() => onRate(restaurant.id, 0)}
+                className="mt-3 text-xs font-medium hover:underline"
+                style={{ color: "#888" }}
+              >
+                Remover avaliação
+              </button>
+            )}
           </div>
 
           {/* Location */}

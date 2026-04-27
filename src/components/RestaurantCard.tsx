@@ -1,6 +1,5 @@
 import { memo, useState } from "react";
 import { Trash2, CheckCircle2, Circle } from "lucide-react";
-import { StarRating } from "./StarRating";
 import { RestaurantDetailsDialog, type RestaurantDetails } from "./RestaurantDetailsDialog";
 
 interface RestaurantCardProps {
@@ -76,7 +75,26 @@ function RestaurantCardImpl({
         </div>
 
         <div className="mt-3 flex items-center justify-between" onClick={stop}>
-          <StarRating rating={restaurant.rating} onChange={(r) => onRate(restaurant.id, r)} />
+          {restaurant.rating > 0 ? (
+            <span
+              className="inline-flex items-baseline gap-0.5"
+              style={{
+                background: "#fff5e6",
+                border: "1px solid #e8d9b0",
+                borderRadius: 20,
+                padding: "4px 10px",
+                fontSize: 13,
+                lineHeight: 1.2,
+              }}
+            >
+              <span style={{ color: "#c4844a", fontWeight: 700 }}>
+                {Number(restaurant.rating).toFixed(1).replace(/\.0$/, "")}
+              </span>
+              <span style={{ color: "#888" }}>/10</span>
+            </span>
+          ) : (
+            <span />
+          )}
           <button
             onClick={(e) => {
               stop(e);
