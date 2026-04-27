@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { StarRating } from "./StarRating";
+import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 
 export type RestaurantDetails = {
@@ -44,7 +38,6 @@ export function RestaurantDetailsDialog({
   onToggleVisited,
   onDelete,
   onRate,
-  onPhotosChange,
 }: Props) {
   const [addedByEmail, setAddedByEmail] = useState<string | null>(null);
 
@@ -82,57 +75,148 @@ export function RestaurantDetailsDialog({
     }
   };
 
+  const ratingValue = Math.max(0, Math.min(10, Number(restaurant.rating) || 0));
+  const ratingDisplay = ratingValue > 0 ? ratingValue.toFixed(1).replace(/\.0$/, "") : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md sm:rounded-2xl p-0 overflow-hidden">
-        <div
-          className="px-6 pt-6 pb-4"
-          style={{ background: "var(--hero-gradient)" }}
-        >
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-primary-foreground tracking-tight pr-8 text-left">
-              {restaurant.name}
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent
+        className="max-w-md sm:rounded-2xl p-0 overflow-hidden border-0 [&>button]:hidden"
+        style={{ background: "#faf9f7" }}
+      >
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 relative" style={{ background: "#faf9f7" }}>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            aria-label="Fechar"
+            className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center transition-colors"
+            style={{ background: "#fff", border: "1px solid #ede9e3", borderRadius: 10, color: "#888" }}
+          >
+            <X size={16} />
+          </button>
+
+          <DialogTitle
+            className="pr-12 text-left tracking-tight"
+            style={{
+              fontFamily: '"Playfair Display", serif',
+              fontSize: 20,
+              fontWeight: 600,
+              color: "#1a1a18",
+              lineHeight: 1.25,
+            }}
+          >
+            {restaurant.name}
+          </DialogTitle>
+
           <div className="mt-3 flex flex-wrap gap-2">
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+              style={
                 restaurant.visited
-                  ? "bg-[var(--status-visited)]/20 text-primary-foreground"
-                  : "bg-[var(--status-to-visit)]/25 text-primary-foreground"
-              }`}
+                  ? { background: "#edf7f0", color: "#3a9a5c" }
+                  : { background: "#fff5e6", color: "#c4844a" }
+              }
             >
               <span
-                className={`inline-block h-1.5 w-1.5 rounded-full ${
-                  restaurant.visited ? "bg-[var(--status-visited)]" : "bg-[var(--status-to-visit)]"
-                }`}
+                className="inline-block h-1.5 w-1.5 rounded-full"
+                style={{ background: restaurant.visited ? "#3a9a5c" : "#c4844a" }}
               />
               {restaurant.visited ? "Visitado" : "Para Visitar"}
             </span>
-            <span className="inline-flex items-center rounded-full bg-primary-foreground/20 px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
+            <span
+              className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
+              style={{ background: "#fff", border: "1px solid #ede9e3", color: "#1a1a18" }}
+            >
               {restaurant.cuisine}
             </span>
           </div>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
+        {/* Body */}
+        <div className="px-6 py-5 space-y-5" style={{ background: "#faf9f7" }}>
+          {/* Rating */}
+          <div
+            className="rounded-2xl p-4"
+            style={{ background: "#fff", border: "1px solid #ede9e3" }}
+          >
+            <p
+              className="text-[11px] font-semibold uppercase tracking-wider"
+              style={{ color: "#888" }}
+            >
+              Avaliação
+            </p>
+
+            <div className="mt-2 flex items-baseline gap-1.5">
+              {ratingDisplay ? (
+                <>
+                  <span
+                    style={{
+                      fontFamily: '"Playfair Display", serif',
+                      fontSize: 40,
+                      fontWeight: 700,
+                      color: "#c4844a",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {ratingDisplay}
+                  </span>
+                  <span className="text-sm" style={{ color: "#888" }}>/ 10</span>
+                </>
+              ) : (
+                <span className="text-sm" style={{ color: "#888" }}>Sem avaliação</span>
+              )}
+            </div>
+
+            {/* 0-10 buttons */}
+            <div className="mt-4 grid grid-cols-11 gap-1">
+              {Array.from({ length: 11 }).map((_, n) => {
+                const active = ratingValue === n;
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => onRate(restaurant.id, n)}
+                    className="h-9 rounded-lg text-xs font-medium transition-colors"
+                    style={
+                      active
+                        ? { background: "#c4844a", color: "#fff", border: "1px solid #c4844a" }
+                        : { background: "#fff", color: "#1a1a18", border: "1px solid #ede9e3" }
+                    }
+                    aria-label={`Avaliar com ${n}`}
+                  >
+                    {n}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Location */}
           <div className="flex items-start gap-3">
-            <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
+            <MapPin size={18} className="mt-0.5 shrink-0" style={{ color: "#c4844a" }} />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p
+                className="text-[11px] font-semibold uppercase tracking-wider"
+                style={{ color: "#888" }}
+              >
                 Localização
               </p>
-              <p className="text-sm text-foreground mt-0.5">{restaurant.location || "—"}</p>
+              <p className="text-sm mt-0.5" style={{ color: "#1a1a18" }}>
+                {restaurant.location || "—"}
+              </p>
               {restaurant.address && (
-                <p className="text-sm text-muted-foreground mt-1">{restaurant.address}</p>
+                <p className="text-sm mt-1" style={{ color: "#888" }}>
+                  {restaurant.address}
+                </p>
               )}
               {mapsUrl && (
                 <a
                   href={mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                  style={{ color: "#c4844a" }}
                 >
                   Abrir no Google Maps
                   <ExternalLink size={12} />
@@ -141,47 +225,37 @@ export function RestaurantDetailsDialog({
             </div>
           </div>
 
-          {/* Rating */}
-          <div className="rounded-lg border border-border bg-muted/30 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Avaliação
-            </p>
-            <div className="mt-2 flex items-center gap-3">
-              <StarRating
-                rating={restaurant.rating}
-                onChange={(r) => onRate(restaurant.id, r)}
-              />
-              <span className="text-sm text-muted-foreground">
-                {restaurant.rating > 0 ? `${restaurant.rating}/5` : "Sem avaliação"}
-              </span>
-            </div>
-          </div>
-
           {/* Meta */}
-          <div className="grid grid-cols-1 gap-2 text-sm">
-            {createdAt && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar size={14} />
-                <span>Adicionado em {dateFmt.format(createdAt)}</span>
-              </div>
-            )}
-            {addedByEmail && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <User size={14} />
-                <span className="truncate">por {addedByEmail}</span>
-              </div>
-            )}
-          </div>
+          {(createdAt || addedByEmail) && (
+            <div className="space-y-1.5 text-sm">
+              {createdAt && (
+                <div className="flex items-center gap-2" style={{ color: "#888" }}>
+                  <Calendar size={14} style={{ color: "#c4844a" }} />
+                  <span>Adicionado em {dateFmt.format(createdAt)}</span>
+                </div>
+              )}
+              {addedByEmail && (
+                <div className="flex items-center gap-2" style={{ color: "#888" }}>
+                  <User size={14} style={{ color: "#c4844a" }} />
+                  <span className="truncate">por {addedByEmail}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
-          <div className="flex flex-col gap-2 pt-2">
+          <div className="flex flex-col gap-2 pt-1">
             <button
+              type="button"
               onClick={() => onToggleVisited(restaurant.id)}
-              className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
-                restaurant.visited
-                  ? "bg-muted text-foreground hover:bg-muted/80"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              }`}
+              className="flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+              style={{
+                background: "#fff",
+                border: "1px solid #ede9e3",
+                color: "#1a1a18",
+                borderRadius: 14,
+                height: 48,
+              }}
             >
               {restaurant.visited ? (
                 <>
@@ -196,8 +270,16 @@ export function RestaurantDetailsDialog({
               )}
             </button>
             <button
+              type="button"
               onClick={handleDelete}
-              className="flex items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+              className="flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+              style={{
+                background: "#fff5f5",
+                border: "1px solid #fecaca",
+                color: "#e53e3e",
+                borderRadius: 14,
+                height: 48,
+              }}
             >
               <Trash2 size={16} />
               Excluir restaurante
