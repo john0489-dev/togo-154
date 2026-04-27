@@ -177,6 +177,25 @@ function Index() {
     await queryClient.invalidateQueries({ queryKey: restaurantsQueryKey });
   }, [queryClient, restaurantsQueryKey]);
 
+  // Prefetch a list's restaurants on hover/focus of the list selector
+  const prefetchList = useCallback(
+    (listId: string) => {
+      const token = tokenRef.current;
+      if (!listId || !token || listId === activeListId) return;
+      queryClient.prefetchQuery({
+        queryKey: ["restaurants", listId],
+        queryFn: async () => {
+          const { restaurants: data } = await getRestaurants({
+            data: { listId },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          return (data ?? []) as Restaurant[];
+        },
+      });
+    },
+    [queryClient, activeListId]
+  );
+
   // Refs to keep callbacks stable across re-renders
   const restaurantsRef = useRef(restaurants);
   const tokenRef = useRef(accessToken);
