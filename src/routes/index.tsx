@@ -247,14 +247,14 @@ function Index() {
         // No memberships — create default list
         const { list } = await createList({
           data: { name: "Minha Lista" },
-          headers: { Authorization: `Bearer ${tokenRef.current}` },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
         setLists([{ id: list.id, name: list.name, created_by: list.created_by }]);
         setActiveListId(list.id);
         // Seed default restaurants
         await seedDefaultRestaurants({
           data: { listId: list.id },
-          headers: { Authorization: `Bearer ${tokenRef.current}` },
+          headers: { Authorization: `Bearer ${authToken}` },
         });
       }
     } catch (err) {
