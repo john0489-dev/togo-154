@@ -73,6 +73,7 @@ type Restaurant = {
   price_range?: string | null;
   occasion?: string | null;
   tags?: string[] | null;
+  photos?: string[] | null;
 };
 type ListItem = {
   id: string;
