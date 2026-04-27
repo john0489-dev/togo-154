@@ -2,14 +2,12 @@ import { memo, useState } from "react";
 import { Trash2, CheckCircle2, Circle } from "lucide-react";
 import { StarRating } from "./StarRating";
 import { RestaurantDetailsDialog, type RestaurantDetails } from "./RestaurantDetailsDialog";
-import { RestaurantPhotos } from "./RestaurantPhotos";
 
 interface RestaurantCardProps {
   restaurant: RestaurantDetails;
   onToggleVisited: (id: string) => void;
   onDelete: (id: string) => void;
   onRate: (id: string, rating: number) => void;
-  onPhotosChange?: (id: string, photos: string[]) => void;
 }
 
 function RestaurantCardImpl({
@@ -17,7 +15,6 @@ function RestaurantCardImpl({
   onToggleVisited,
   onDelete,
   onRate,
-  onPhotosChange,
 }: RestaurantCardProps) {
   const [open, setOpen] = useState(false);
   const stop = (e: React.MouseEvent | React.KeyboardEvent) => e.stopPropagation();
@@ -37,57 +34,44 @@ function RestaurantCardImpl({
         className="rounded-[14px] p-4 cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-ring"
         style={{ background: "#fff", border: "1px solid #ede9e3" }}
       >
-        <div className="flex items-start gap-3">
-          {/* Thumbnail à esquerda */}
-          <div onClick={stop}>
-            <RestaurantPhotos
-              restaurantId={restaurant.id}
-              photos={restaurant.photos ?? []}
-              onChange={(next) => onPhotosChange?.(restaurant.id, next)}
-              variant="thumbnail"
-            />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="text-base font-semibold text-card-foreground truncate">
+                {restaurant.name}
+              </h3>
+              <p className="text-sm text-muted-foreground truncate">{restaurant.location}</p>
+            </div>
+            <button
+              onClick={(e) => {
+                stop(e);
+                onDelete(restaurant.id);
+              }}
+              className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+              aria-label={`Excluir ${restaurant.name}`}
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
 
-          {/* Conteúdo */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold text-card-foreground truncate">
-                  {restaurant.name}
-                </h3>
-                <p className="text-sm text-muted-foreground truncate">{restaurant.location}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  stop(e);
-                  onDelete(restaurant.id);
-                }}
-                className="p-1 text-muted-foreground hover:text-destructive transition-colors"
-                aria-label={`Excluir ${restaurant.name}`}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
-              <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
-                {restaurant.cuisine}
-              </span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="inline-flex items-center rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+              {restaurant.cuisine}
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                restaurant.visited
+                  ? "bg-[var(--status-visited)]/15 text-[var(--status-visited)]"
+                  : "bg-[var(--status-to-visit)]/15 text-[var(--status-to-visit)]"
+              }`}
+            >
               <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  restaurant.visited
-                    ? "bg-[var(--status-visited)]/15 text-[var(--status-visited)]"
-                    : "bg-[var(--status-to-visit)]/15 text-[var(--status-to-visit)]"
+                className={`inline-block h-1.5 w-1.5 rounded-full ${
+                  restaurant.visited ? "bg-[var(--status-visited)]" : "bg-[var(--status-to-visit)]"
                 }`}
-              >
-                <span
-                  className={`inline-block h-1.5 w-1.5 rounded-full ${
-                    restaurant.visited ? "bg-[var(--status-visited)]" : "bg-[var(--status-to-visit)]"
-                  }`}
-                />
-                {restaurant.visited ? "Visitado" : "Para Visitar"}
-              </span>
-            </div>
+              />
+              {restaurant.visited ? "Visitado" : "Para Visitar"}
+            </span>
           </div>
         </div>
 
@@ -122,7 +106,6 @@ function RestaurantCardImpl({
         onToggleVisited={onToggleVisited}
         onDelete={onDelete}
         onRate={onRate}
-        onPhotosChange={onPhotosChange}
       />
     </>
   );
