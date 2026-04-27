@@ -255,47 +255,43 @@ function Index() {
     return Array.from(set).sort();
   }, [restaurants]);
 
-  // Load lists — gated on authenticated session with valid access token
+  // Auto-select the first list as soon as lists arrive (if none picked yet).
+  useEffect(() => {
+    if (activeListId) return;
+    if (lists.length > 0) {
+      setActiveListId(lists[0].id);
+    }
+  }, [lists, activeListId]);
+
+  // First-time user with zero lists: create a default list + seed restaurants.
+  // Guarded by a ref so we never trigger the create twice for the same session.
+  const defaultListBootstrappedRef = useRef(false);
   useEffect(() => {
     if (!isAuthenticated || !accessToken) return;
-    loadLists(accessToken);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, accessToken]);
-
-  const loadLists = async (token?: string) => {
-    const authToken = token ?? tokenRef.current;
-    if (!authToken) {
-      console.warn("[Debug] loadLists skipped: no access token");
-      return;
-    }
-    try {
-      const { lists: data } = await getUserLists({
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      const mapped = data
-        .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
-        .filter((l) => !!l.id);
-      setLists(mapped);
-      if (mapped.length > 0) {
-        setActiveListId((prev) => prev ?? mapped[0].id);
-      } else {
-        // No memberships — create default list
+    if (listsQuery.isLoading || listsQuery.isFetching) return;
+    if (!listsQuery.isSuccess) return;
+    if (lists.length > 0) return;
+    if (defaultListBootstrappedRef.current) return;
+    defaultListBootstrappedRef.current = true;
+    (async () => {
+      try {
         const { list } = await createList({
           data: { name: "Minha Lista" },
-          headers: { Authorization: `Bearer ${authToken}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
         setLists([{ id: list.id, name: list.name, created_by: list.created_by }]);
         setActiveListId(list.id);
-        // Seed default restaurants
         await seedDefaultRestaurants({
           data: { listId: list.id },
-          headers: { Authorization: `Bearer ${authToken}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
+        await queryClient.invalidateQueries({ queryKey: listsQueryKey });
+      } catch (err) {
+        console.error("Error creating default list:", err);
+        defaultListBootstrappedRef.current = false;
       }
-    } catch (err) {
-      console.error("Error loading lists:", err);
-    }
-  };
+    })();
+  }, [isAuthenticated, accessToken, listsQuery.isLoading, listsQuery.isFetching, listsQuery.isSuccess, lists.length, setLists, queryClient, listsQueryKey]);
 
   // Restaurants are fetched declaratively by useQuery (queryKey: ['restaurants', activeListId])
   // so switching lists and coming back is instant from cache.
