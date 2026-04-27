@@ -139,6 +139,34 @@ function Index() {
 
   // Stable token reference for effect deps
   const accessToken = session?.access_token;
+  const userId = user?.id;
+
+  // Lists query — keyed on userId so it refetches when user changes,
+  // and only enabled once auth is fully resolved.
+  const listsQueryKey = useMemo(() => ["lists", userId] as const, [userId]);
+  const listsQuery = useQuery({
+    queryKey: listsQueryKey,
+    enabled: !!isAuthenticated && !!accessToken && !!userId,
+    queryFn: async () => {
+      const { lists: data } = await getUserLists({
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return (data ?? [])
+        .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
+        .filter((l: ListItem) => !!l.id) as ListItem[];
+    },
+  });
+  const lists = listsQuery.data ?? [];
+
+  const setLists = useCallback(
+    (updater: ListItem[] | ((prev: ListItem[]) => ListItem[])) => {
+      queryClient.setQueryData<ListItem[]>(listsQueryKey, (prev) => {
+        const base = prev ?? [];
+        return typeof updater === "function" ? (updater as (p: ListItem[]) => ListItem[])(base) : updater;
+      });
+    },
+    [queryClient, listsQueryKey]
+  );
 
   // Restaurants are cached by [list_id]. Switching lists and coming back is instant.
   const restaurantsQueryKey = useMemo(
