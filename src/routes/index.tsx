@@ -220,18 +220,22 @@ function Index() {
     return Array.from(set).sort();
   }, [restaurants]);
 
-  // Load lists
+  // Load lists — gated on authenticated session with valid access token
   useEffect(() => {
-    if (!accessToken) return;
-    loadLists();
+    if (!isAuthenticated || !accessToken) return;
+    loadLists(accessToken);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [isAuthenticated, accessToken]);
 
-  const loadLists = async () => {
-    if (!tokenRef.current) return;
+  const loadLists = async (token?: string) => {
+    const authToken = token ?? tokenRef.current;
+    if (!authToken) {
+      console.warn("[Debug] loadLists skipped: no access token");
+      return;
+    }
     try {
       const { lists: data } = await getUserLists({
-        headers: { Authorization: `Bearer ${tokenRef.current}` },
+        headers: { Authorization: `Bearer ${authToken}` },
       });
       const mapped = data
         .map((l: any) => ({ id: l.id, name: l.name, created_by: l.created_by }))
