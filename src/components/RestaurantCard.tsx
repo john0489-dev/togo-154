@@ -1,8 +1,9 @@
 import { memo, useState } from "react";
-import { Trash2, CheckCircle2, Circle } from "lucide-react";
+import { Trash2, CheckCircle2, Circle, StickyNote } from "lucide-react";
 import { StarRating } from "./StarRating";
 import { RestaurantDetailsDialog, type RestaurantDetails } from "./RestaurantDetailsDialog";
 import { RestaurantPhotos } from "./RestaurantPhotos";
+import { chipColorFor } from "./RestaurantTagsEditor";
 
 interface RestaurantCardProps {
   restaurant: RestaurantDetails;
@@ -10,6 +11,10 @@ interface RestaurantCardProps {
   onDelete: (id: string) => void;
   onRate: (id: string, rating: number) => void;
   onPhotosChange?: (id: string, photos: string[]) => void;
+  onNotesChange?: (id: string, notes: string) => void;
+  onTagsChange?: (id: string, tags: string[]) => void;
+  onTagClick?: (tag: string) => void;
+  tagSuggestions?: string[];
 }
 
 function RestaurantCardImpl({
@@ -18,9 +23,16 @@ function RestaurantCardImpl({
   onDelete,
   onRate,
   onPhotosChange,
+  onNotesChange,
+  onTagsChange,
+  onTagClick,
+  tagSuggestions,
 }: RestaurantCardProps) {
   const [open, setOpen] = useState(false);
   const stop = (e: React.MouseEvent | React.KeyboardEvent) => e.stopPropagation();
+
+  const note = (restaurant.notes ?? "").trim();
+  const tags = restaurant.tags ?? [];
 
   return (
     <>
@@ -52,8 +64,16 @@ function RestaurantCardImpl({
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="text-base font-semibold text-card-foreground truncate">
-                  {restaurant.name}
+                <h3 className="text-base font-semibold text-card-foreground truncate flex items-center gap-1.5">
+                  <span className="truncate">{restaurant.name}</span>
+                  {note && (
+                    <StickyNote
+                      size={14}
+                      className="shrink-0"
+                      style={{ color: "#c4844a" }}
+                      aria-label="Tem nota"
+                    />
+                  )}
                 </h3>
                 <p className="text-sm text-muted-foreground truncate">{restaurant.location}</p>
               </div>
@@ -91,6 +111,39 @@ function RestaurantCardImpl({
           </div>
         </div>
 
+        {/* Note preview */}
+        {note && (
+          <p
+            className="mt-3 text-sm text-muted-foreground line-clamp-2"
+            style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+          >
+            {note}
+          </p>
+        )}
+
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5" onClick={stop}>
+            {tags.map((tag) => {
+              const c = chipColorFor(tag);
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={(e) => {
+                    stop(e);
+                    onTagClick?.(tag);
+                  }}
+                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-opacity hover:opacity-80"
+                  style={{ background: c.bg, color: c.fg }}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="mt-3 flex items-center justify-between" onClick={stop}>
           <StarRating rating={restaurant.rating} onChange={(r) => onRate(restaurant.id, r)} />
           <button
@@ -123,6 +176,9 @@ function RestaurantCardImpl({
         onDelete={onDelete}
         onRate={onRate}
         onPhotosChange={onPhotosChange}
+        onNotesChange={onNotesChange}
+        onTagsChange={onTagsChange}
+        tagSuggestions={tagSuggestions}
       />
     </>
   );
