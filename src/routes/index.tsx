@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdvancedFiltersSheet, EMPTY_ADVANCED_FILTERS, countActiveFilters, type AdvancedFilters } from "@/components/AdvancedFiltersSheet";
 import { SlidersHorizontal, FileDown } from "lucide-react";
 import { ExportPdfDialog, type ExportPdfOptionsValue } from "@/components/ExportPdfDialog";
+import { ChefAIWidget } from "@/components/ChefAIWidget";
 import { exportRestaurantsToPdf, type ExportSection, type ExportRestaurant } from "@/lib/exportPdf";
 import { toast } from "sonner";
 
