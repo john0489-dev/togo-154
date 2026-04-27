@@ -229,17 +229,33 @@ export function RestaurantDetailsDialog({
                   {restaurant.address}
                 </p>
               )}
-              {mapsUrl && (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:underline"
-                  style={{ color: "#c4844a" }}
-                >
-                  Abrir no Google Maps
-                  <ExternalLink size={12} />
-                </a>
+              {(mapsUrl || wazeUrl) && (
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  {mapsUrl && (
+                    <a
+                      href={mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      style={{ color: "#c4844a" }}
+                    >
+                      Abrir no Google Maps
+                      <ExternalLink size={12} />
+                    </a>
+                  )}
+                  {wazeUrl && (
+                    <a
+                      href={wazeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                      style={{ color: "#c4844a" }}
+                    >
+                      <Navigation2 size={12} />
+                      Abrir no Waze
+                    </a>
+                  )}
+                </div>
               )}
             </div>
           </div>
