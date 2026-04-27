@@ -818,13 +818,32 @@ function Index() {
               </div>
             </div>
 
-            {plan === "free" && (
-              <div className="flex flex-wrap gap-2">
-                <ProLockBadge variant="button" featureName="Filtros avançados" />
-                <ProLockBadge variant="button" featureName="Exportar PDF" />
-                <ProLockBadge variant="button" featureName="Tags" />
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {plan === "pro" ? (
+                <button
+                  type="button"
+                  onClick={() => setAdvancedSheetOpen(true)}
+                  className="flex items-center gap-1.5 rounded-lg border border-input bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors"
+                >
+                  <SlidersHorizontal size={12} />
+                  <span>Filtros avançados</span>
+                  {advancedActiveCount > 0 && (
+                    <span
+                      className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                      style={{ background: "#c4844a" }}
+                    >
+                      {advancedActiveCount}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <>
+                  <ProLockBadge variant="button" featureName="Filtros avançados" />
+                  <ProLockBadge variant="button" featureName="Exportar PDF" />
+                  <ProLockBadge variant="button" featureName="Tags" />
+                </>
+              )}
+            </div>
 
             <div className="space-y-2.5 pb-20">
               {loading ? (
