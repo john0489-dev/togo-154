@@ -1029,6 +1029,13 @@ function Index() {
         availableCuisines={cuisines}
         availableTags={availableTags}
       />
+      <ExportPdfDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        onConfirm={handleExportPdf}
+        allowAllLists={lists.length > 1}
+        currentListName={lists.find((l) => l.id === activeListId)?.name ?? "Minha Lista"}
+      />
     </div>
   );
 }
