@@ -74,7 +74,6 @@ type Restaurant = {
   occasion?: string | null;
   tags?: string[] | null;
   photos?: string[] | null;
-  notes?: string | null;
 };
 type ListItem = {
   id: string;
@@ -336,29 +335,6 @@ function Index() {
     } catch {}
   }, []);
 
-  const handlePhotosChange = useCallback((id: string, photos: string[]) => {
-    setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, photos } : r)));
-  }, []);
-
-  const handleNotesChange = useCallback((id: string, notes: string) => {
-    setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, notes } : r)));
-  }, []);
-
-  const handleTagsChange = useCallback((id: string, tags: string[]) => {
-    setRestaurants((prev) => prev.map((r) => (r.id === id ? { ...r, tags } : r)));
-  }, []);
-
-  const handleTagClick = useCallback((tag: string) => {
-    setAdvancedFilters((f) => (f.tags.includes(tag) ? f : { ...f, tags: [...f.tags, tag] }));
-  }, []);
-
-  const tagSuggestions = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const r of restaurants) {
-      for (const t of r.tags ?? []) counts.set(t, (counts.get(t) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t).slice(0, 12);
-  }, [restaurants]);
 
   const handleExportPdf = useCallback(async (opts: ExportPdfOptionsValue) => {
     const token = tokenRef.current;
@@ -953,11 +929,7 @@ function Index() {
                       onToggleVisited={handleToggleVisited}
                       onDelete={handleDelete}
                       onRate={handleRate}
-                      onPhotosChange={handlePhotosChange}
-                      onNotesChange={handleNotesChange}
-                      onTagsChange={handleTagsChange}
-                      onTagClick={handleTagClick}
-                      tagSuggestions={tagSuggestions}
+                      
                     />
                   ))}
                   {hasMore && (

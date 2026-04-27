@@ -7,9 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { StarRating } from "./StarRating";
-import { RestaurantPhotos } from "./RestaurantPhotos";
-import { RestaurantNotesEditor } from "./RestaurantNotesEditor";
-import { RestaurantTagsEditor } from "./RestaurantTagsEditor";
 import { supabase } from "@/integrations/supabase/client";
 
 export type RestaurantDetails = {
@@ -26,8 +23,6 @@ export type RestaurantDetails = {
   created_at?: string;
   list_id?: string | null;
   photos?: string[] | null;
-  notes?: string | null;
-  tags?: string[] | null;
 };
 
 interface Props {
@@ -38,10 +33,6 @@ interface Props {
   onDelete: (id: string) => void;
   onRate: (id: string, rating: number) => void;
   onPhotosChange?: (id: string, photos: string[]) => void;
-  onNotesChange?: (id: string, notes: string) => void;
-  onTagsChange?: (id: string, tags: string[]) => void;
-  /** Suggested tags pulled from across the user's restaurants. */
-  tagSuggestions?: string[];
 }
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" });
@@ -54,9 +45,6 @@ export function RestaurantDetailsDialog({
   onDelete,
   onRate,
   onPhotosChange,
-  onNotesChange,
-  onTagsChange,
-  tagSuggestions = [],
 }: Props) {
   const [addedByEmail, setAddedByEmail] = useState<string | null>(null);
 
@@ -128,19 +116,6 @@ export function RestaurantDetailsDialog({
         </div>
 
         <div className="px-6 py-5 space-y-4">
-          {/* Photos */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Fotos
-            </p>
-            <RestaurantPhotos
-              restaurantId={restaurant.id}
-              photos={restaurant.photos ?? []}
-              onChange={(next) => onPhotosChange?.(restaurant.id, next)}
-              variant="carousel"
-            />
-          </div>
-
           {/* Location */}
           <div className="flex items-start gap-3">
             <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
@@ -180,31 +155,6 @@ export function RestaurantDetailsDialog({
                 {restaurant.rating > 0 ? `${restaurant.rating}/5` : "Sem avaliação"}
               </span>
             </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Notas
-            </p>
-            <RestaurantNotesEditor
-              restaurantId={restaurant.id}
-              notes={restaurant.notes ?? ""}
-              onChange={(notes) => onNotesChange?.(restaurant.id, notes)}
-            />
-          </div>
-
-          {/* Tags */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Tags
-            </p>
-            <RestaurantTagsEditor
-              restaurantId={restaurant.id}
-              tags={restaurant.tags ?? []}
-              suggestions={tagSuggestions}
-              onChange={(tags) => onTagsChange?.(restaurant.id, tags)}
-            />
           </div>
 
           {/* Meta */}

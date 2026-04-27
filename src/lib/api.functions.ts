@@ -240,12 +240,10 @@ export const updateRestaurant = createServerFn({ method: "POST" })
       latitude: z.number().optional(),
       longitude: z.number().optional(),
       photos: z.array(z.string().url().max(1000)).max(3).optional(),
-      notes: z.string().max(500).optional(),
-      tags: z.array(z.string().min(1).max(40)).max(5).optional(),
     })
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase } = context;
     const update: {
       visited?: boolean;
       rating?: number;
@@ -254,8 +252,6 @@ export const updateRestaurant = createServerFn({ method: "POST" })
       latitude?: number;
       longitude?: number;
       photos?: string[];
-      notes?: string;
-      tags?: string[];
     } = {};
     if (data.visited !== undefined) update.visited = data.visited;
     if (data.rating !== undefined) update.rating = data.rating;
@@ -264,16 +260,6 @@ export const updateRestaurant = createServerFn({ method: "POST" })
     if (data.latitude !== undefined) update.latitude = data.latitude;
     if (data.longitude !== undefined) update.longitude = data.longitude;
     if (data.photos !== undefined) update.photos = data.photos;
-
-    // Pro-only fields: enforce server-side
-    if (data.notes !== undefined || data.tags !== undefined) {
-      const plan = await fetchUserPlan(supabase, userId);
-      if (plan !== "pro") {
-        throw new Error("Notas e tags são exclusivas do To Go Pro");
-      }
-      if (data.notes !== undefined) update.notes = data.notes;
-      if (data.tags !== undefined) update.tags = data.tags;
-    }
 
     const { error } = await supabase
       .from("restaurants")
