@@ -3,9 +3,11 @@
 @import "tw-animate-css";
 
 /* Prevent black flash before React mounts — must come BEFORE @theme/layer rules */
-html, body {
-  background-color: #f5f0e8;
+html, body, #root, #app {
+  background-color: #f5f0e8 !important;
 }
+
+/* Also set via meta theme-color handled in root */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -73,7 +75,7 @@ html, body {
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.97 0.005 250);
+  --background: oklch(0.97 0.012 60);
   --foreground: oklch(0.2 0.02 260);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.02 260);

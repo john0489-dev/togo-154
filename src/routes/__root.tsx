@@ -44,7 +44,7 @@ export const Route = createRootRoute({
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "To Go" },
-      { name: "theme-color", content: "#86d9b0" },
+      { name: "theme-color", content: "#f5f0e8" },
       { property: "og:title", content: "To Go" },
       { property: "og:description", content: "Sua lista pessoal de restaurantes para visitar." },
       { property: "og:type", content: "website" },
