@@ -117,6 +117,19 @@ export function RestaurantDetailsDialog({
         </div>
 
         <div className="px-6 py-5 space-y-4">
+          {/* Photos */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Fotos
+            </p>
+            <RestaurantPhotos
+              restaurantId={restaurant.id}
+              photos={restaurant.photos ?? []}
+              onChange={(next) => onPhotosChange?.(restaurant.id, next)}
+              variant="carousel"
+            />
+          </div>
+
           {/* Location */}
           <div className="flex items-start gap-3">
             <MapPin size={18} className="text-muted-foreground mt-0.5 shrink-0" />
