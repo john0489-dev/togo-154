@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PaymentSuccessRouteImport } from './routes/payment.success'
 import { Route as PaymentCanceledRouteImport } from './routes/payment.canceled'
 import { Route as InviteCodeRouteImport } from './routes/invite.$code'
+import { Route as ApiChefAiRouteImport } from './routes/api/chef-ai'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -76,6 +77,11 @@ const InviteCodeRoute = InviteCodeRouteImport.update({
   path: '/invite/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChefAiRoute = ApiChefAiRouteImport.update({
+  id: '/api/chef-ai',
+  path: '/api/chef-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/pro': typeof ProRoute
   '/refund': typeof RefundRoute
   '/terms': typeof TermsRoute
+  '/api/chef-ai': typeof ApiChefAiRoute
   '/invite/$code': typeof InviteCodeRoute
   '/payment/canceled': typeof PaymentCanceledRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/pro': typeof ProRoute
   '/refund': typeof RefundRoute
   '/terms': typeof TermsRoute
+  '/api/chef-ai': typeof ApiChefAiRoute
   '/invite/$code': typeof InviteCodeRoute
   '/payment/canceled': typeof PaymentCanceledRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/pro': typeof ProRoute
   '/refund': typeof RefundRoute
   '/terms': typeof TermsRoute
+  '/api/chef-ai': typeof ApiChefAiRoute
   '/invite/$code': typeof InviteCodeRoute
   '/payment/canceled': typeof PaymentCanceledRoute
   '/payment/success': typeof PaymentSuccessRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/pro'
     | '/refund'
     | '/terms'
+    | '/api/chef-ai'
     | '/invite/$code'
     | '/payment/canceled'
     | '/payment/success'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/pro'
     | '/refund'
     | '/terms'
+    | '/api/chef-ai'
     | '/invite/$code'
     | '/payment/canceled'
     | '/payment/success'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/pro'
     | '/refund'
     | '/terms'
+    | '/api/chef-ai'
     | '/invite/$code'
     | '/payment/canceled'
     | '/payment/success'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   ProRoute: typeof ProRoute
   RefundRoute: typeof RefundRoute
   TermsRoute: typeof TermsRoute
+  ApiChefAiRoute: typeof ApiChefAiRoute
   InviteCodeRoute: typeof InviteCodeRoute
   PaymentCanceledRoute: typeof PaymentCanceledRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chef-ai': {
+      id: '/api/chef-ai'
+      path: '/api/chef-ai'
+      fullPath: '/api/chef-ai'
+      preLoaderRoute: typeof ApiChefAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -264,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProRoute: ProRoute,
   RefundRoute: RefundRoute,
   TermsRoute: TermsRoute,
+  ApiChefAiRoute: ApiChefAiRoute,
   InviteCodeRoute: InviteCodeRoute,
   PaymentCanceledRoute: PaymentCanceledRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
@@ -271,3 +292,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
