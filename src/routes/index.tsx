@@ -196,11 +196,13 @@ function Index() {
     [queryClient, activeListId]
   );
 
-  // Refs to keep callbacks stable across re-renders
+  // Refs to keep callbacks stable across re-renders.
+  // Updated synchronously during render so callbacks always read the latest
+  // values without needing dedicated effects (which would schedule extra work).
   const restaurantsRef = useRef(restaurants);
   const tokenRef = useRef(accessToken);
-  useEffect(() => { restaurantsRef.current = restaurants; }, [restaurants]);
-  useEffect(() => { tokenRef.current = accessToken; }, [accessToken]);
+  restaurantsRef.current = restaurants;
+  tokenRef.current = accessToken;
 
   useEffect(() => {
     if (!accessToken) return;
