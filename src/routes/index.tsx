@@ -74,6 +74,7 @@ type Restaurant = {
   occasion?: string | null;
   tags?: string[] | null;
   photos?: string[] | null;
+  notes?: string | null;
 };
 type ListItem = {
   id: string;
