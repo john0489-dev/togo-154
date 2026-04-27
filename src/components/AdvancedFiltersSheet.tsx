@@ -4,7 +4,7 @@ import { X, Star } from "lucide-react";
 export type StatusFilter = "all" | "visited" | "to-visit";
 
 export interface AdvancedFilters {
-  priceRanges: string[];
+  neighborhoods: string[];
   occasions: string[];
   cuisines: string[];
   status: StatusFilter;
@@ -13,7 +13,7 @@ export interface AdvancedFilters {
 }
 
 export const EMPTY_ADVANCED_FILTERS: AdvancedFilters = {
-  priceRanges: [],
+  neighborhoods: [],
   occasions: [],
   cuisines: [],
   status: "all",
@@ -23,7 +23,7 @@ export const EMPTY_ADVANCED_FILTERS: AdvancedFilters = {
 
 export function countActiveFilters(f: AdvancedFilters): number {
   return (
-    f.priceRanges.length +
+    f.neighborhoods.length +
     f.occasions.length +
     f.cuisines.length +
     (f.status !== "all" ? 1 : 0) +
@@ -32,7 +32,6 @@ export function countActiveFilters(f: AdvancedFilters): number {
   );
 }
 
-const PRICE_OPTIONS = ["$", "$$", "$$$", "$$$$"];
 const OCCASION_OPTIONS = ["Casual", "Romântico", "Reunião", "Família", "Happy Hour", "Aniversário"];
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "Todos" },
@@ -50,6 +49,8 @@ interface Props {
   availableCuisines: string[];
   /** All tags available in the user's data (dynamic) */
   availableTags: string[];
+  /** All neighborhoods available in the user's data (dynamic) */
+  availableNeighborhoods: string[];
 }
 
 export function AdvancedFiltersSheet({
@@ -59,6 +60,7 @@ export function AdvancedFiltersSheet({
   onChange,
   availableCuisines,
   availableTags,
+  availableNeighborhoods,
 }: Props) {
   // Lock body scroll while open
   useEffect(() => {
@@ -139,19 +141,21 @@ export function AdvancedFiltersSheet({
             </div>
           </Section>
 
-          {/* Faixa de preço */}
-          <Section title="Faixa de preço">
-            <div className="flex flex-wrap gap-2">
-              {PRICE_OPTIONS.map((p) => (
-                <Chip
-                  key={p}
-                  active={value.priceRanges.includes(p)}
-                  onClick={() => onChange({ ...value, priceRanges: toggle(value.priceRanges, p) })}
-                  label={p}
-                />
-              ))}
-            </div>
-          </Section>
+          {/* Bairro */}
+          {availableNeighborhoods.length > 0 && (
+            <Section title="Bairro">
+              <div className="flex flex-wrap gap-2">
+                {availableNeighborhoods.map((n) => (
+                  <Chip
+                    key={n}
+                    active={value.neighborhoods.includes(n)}
+                    onClick={() => onChange({ ...value, neighborhoods: toggle(value.neighborhoods, n) })}
+                    label={n}
+                  />
+                ))}
+              </div>
+            </Section>
+          )}
 
           {/* Ocasião */}
           <Section title="Ocasião">

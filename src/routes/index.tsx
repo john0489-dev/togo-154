@@ -235,6 +235,16 @@ function Index() {
     return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
   }, [restaurants]);
 
+  // Neighborhoods (location field) available across the user's restaurants
+  const availableNeighborhoods = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of restaurants) {
+      const loc = (r.location ?? "").trim();
+      if (loc) set.add(loc);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [restaurants]);
+
   const advancedActiveCount = useMemo(() => countActiveFilters(advancedFilters), [advancedFilters]);
 
   const filtered = useMemo(() => {
@@ -250,7 +260,7 @@ function Index() {
         if (cuisineFilter.length > 0 && !cuisineFilter.includes(r.cuisine)) return false;
 
         // Advanced filters
-        if (adv.priceRanges.length > 0 && (!r.price_range || !adv.priceRanges.includes(r.price_range))) return false;
+        if (adv.neighborhoods.length > 0 && !adv.neighborhoods.includes(r.location)) return false;
         if (adv.occasions.length > 0 && (!r.occasion || !adv.occasions.includes(r.occasion))) return false;
         if (adv.cuisines.length > 0 && !adv.cuisines.includes(r.cuisine)) return false;
         if (adv.minRating > 0 && (r.rating ?? 0) < adv.minRating) return false;
@@ -1031,6 +1041,7 @@ function Index() {
         onChange={setAdvancedFilters}
         availableCuisines={cuisines}
         availableTags={availableTags}
+        availableNeighborhoods={availableNeighborhoods}
       />
       <ExportPdfDialog
         open={exportOpen}
