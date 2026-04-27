@@ -38,6 +38,10 @@ interface Props {
   onDelete: (id: string) => void;
   onRate: (id: string, rating: number) => void;
   onPhotosChange?: (id: string, photos: string[]) => void;
+  onNotesChange?: (id: string, notes: string) => void;
+  onTagsChange?: (id: string, tags: string[]) => void;
+  /** Suggested tags pulled from across the user's restaurants. */
+  tagSuggestions?: string[];
 }
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" });
@@ -50,6 +54,9 @@ export function RestaurantDetailsDialog({
   onDelete,
   onRate,
   onPhotosChange,
+  onNotesChange,
+  onTagsChange,
+  tagSuggestions = [],
 }: Props) {
   const [addedByEmail, setAddedByEmail] = useState<string | null>(null);
 
