@@ -45,6 +45,7 @@ export function RestaurantDetailsDialog({
   onToggleVisited,
   onDelete,
   onRate,
+  onPhotosChange,
 }: Props) {
   const [addedByEmail, setAddedByEmail] = useState<string | null>(null);
 
