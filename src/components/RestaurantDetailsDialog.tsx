@@ -67,6 +67,13 @@ export function RestaurantDetailsDialog({
         ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`
         : null;
 
+  const wazeUrl =
+    restaurant.latitude != null && restaurant.longitude != null
+      ? `https://waze.com/ul?ll=${restaurant.latitude},${restaurant.longitude}&navigate=yes`
+      : restaurant.address
+        ? `https://waze.com/ul?q=${encodeURIComponent(restaurant.address)}`
+        : null;
+
   const createdAt = restaurant.created_at ? new Date(restaurant.created_at) : null;
 
   const handleDelete = () => {
