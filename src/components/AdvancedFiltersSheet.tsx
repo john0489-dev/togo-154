@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { X, Star } from "lucide-react";
+import { X } from "lucide-react";
 
 export type StatusFilter = "all" | "visited" | "to-visit";
 
