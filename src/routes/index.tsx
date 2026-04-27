@@ -957,6 +957,14 @@ function Index() {
           session={session!}
         />
       )}
+      <AdvancedFiltersSheet
+        open={advancedSheetOpen}
+        onClose={() => setAdvancedSheetOpen(false)}
+        value={advancedFilters}
+        onChange={setAdvancedFilters}
+        availableCuisines={cuisines}
+        availableTags={availableTags}
+      />
     </div>
   );
 }
