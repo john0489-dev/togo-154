@@ -24,6 +24,8 @@ export type RestaurantDetails = {
   created_at?: string;
   list_id?: string | null;
   photos?: string[] | null;
+  notes?: string | null;
+  tags?: string[] | null;
 };
 
 interface Props {
