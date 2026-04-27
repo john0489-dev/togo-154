@@ -11,7 +11,7 @@ interface RestaurantContext {
   rating?: number | null;
   visited?: boolean;
   occasion?: string | null;
-  tags?: string[];
+  tags?: string[] | null;
 }
 
 interface Props {
