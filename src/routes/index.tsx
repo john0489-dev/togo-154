@@ -65,6 +65,9 @@ type Restaurant = {
   latitude?: number | null;
   longitude?: number | null;
   address?: string | null;
+  price_range?: string | null;
+  occasion?: string | null;
+  tags?: string[] | null;
 };
 type ListItem = {
   id: string;
