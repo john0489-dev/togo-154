@@ -33,6 +33,7 @@ interface Props {
   onToggleVisited: (id: string) => void;
   onDelete: (id: string) => void;
   onRate: (id: string, rating: number) => void;
+  onPhotosChange?: (id: string, photos: string[]) => void;
 }
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" });
