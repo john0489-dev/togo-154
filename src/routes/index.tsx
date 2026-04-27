@@ -1041,6 +1041,7 @@ function Index() {
         onChange={setAdvancedFilters}
         availableCuisines={cuisines}
         availableTags={availableTags}
+        availableNeighborhoods={availableNeighborhoods}
       />
       <ExportPdfDialog
         open={exportOpen}
