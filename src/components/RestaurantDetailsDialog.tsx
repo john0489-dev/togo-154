@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X } from "lucide-react";
+import { CheckCircle2, Circle, MapPin, Trash2, ExternalLink, Calendar, User, X, Navigation2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
