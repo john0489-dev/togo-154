@@ -954,6 +954,10 @@ function Index() {
                       onDelete={handleDelete}
                       onRate={handleRate}
                       onPhotosChange={handlePhotosChange}
+                      onNotesChange={handleNotesChange}
+                      onTagsChange={handleTagsChange}
+                      onTagClick={handleTagClick}
+                      tagSuggestions={tagSuggestions}
                     />
                   ))}
                   {hasMore && (
