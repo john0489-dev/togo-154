@@ -107,7 +107,7 @@ function IndexWrapper() {
 }
 
 function Index() {
-  const { user, session } = useAuth();
+  const { user, session, isAuthenticated } = useAuth();
   const { plan, usage, limits, refresh: refreshPlan } = usePlan();
   const { open: openUpgrade } = useUpgradeModal();
   const navigate = useNavigate();
