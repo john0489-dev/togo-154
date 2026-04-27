@@ -964,10 +964,25 @@ function Index() {
 
             <div className="space-y-2.5 pb-20">
               {loading ? (
-                <div className="space-y-2.5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-[88px] w-full rounded-xl" />
-                  ))}
+                <div className="space-y-2.5" aria-label="Carregando restaurantes">
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    // Deterministic pseudo-random widths so SSR matches client
+                    const nameWidth = 40 + ((i * 37) % 31); // 40–70%
+                    return (
+                      <div
+                        key={i}
+                        className="rounded-xl p-3"
+                        style={{ background: "#fff", border: "1px solid #ede9e3" }}
+                      >
+                        <Skeleton className="h-4 rounded" style={{ width: `${nameWidth}%` }} />
+                        <Skeleton className="mt-2 h-3 rounded" style={{ width: "30%" }} />
+                        <div className="mt-3 flex gap-1.5">
+                          <Skeleton className="h-5 w-14 rounded-full" />
+                          <Skeleton className="h-5 w-12 rounded-full" />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : filtered.length === 0 ? (
                 <p className="py-8 text-center text-sm text-muted-foreground">Nenhum restaurante encontrado.</p>
