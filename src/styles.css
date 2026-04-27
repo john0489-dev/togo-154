@@ -2,6 +2,11 @@
 @source "../src";
 @import "tw-animate-css";
 
+/* Prevent black flash before React mounts — must come BEFORE @theme/layer rules */
+html, body {
+  background-color: #f5f0e8;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
